@@ -5,7 +5,8 @@
     android:id="@+id/activity_launcher"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark">
+    android:background="@color/colorPrimaryDark"
+    >
 
     <TextView
         android:text="Parrot Sumo\nVoice\nRecognition"
@@ -30,10 +31,11 @@
         android:text="Start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/button"
+        android:id="@+id/startButton"
         tools:theme="@android:style/Theme.Material"
         android:layout_marginBottom="28dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="startMainMenuActivity" />
 
 </RelativeLayout>
