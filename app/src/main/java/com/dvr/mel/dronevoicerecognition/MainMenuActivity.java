@@ -1,8 +1,10 @@
 package com.dvr.mel.dronevoicerecognition;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 
 public class MainMenuActivity extends Activity {
 
@@ -21,5 +23,10 @@ public class MainMenuActivity extends Activity {
         setContentView(R.layout.activity_main_menu);
 
 
+    }
+
+    public void startManageCorpusesActivity(View view) {
+        Intent intent = new Intent(this, ManageCorpusesActivity.class);
+        startActivity(intent);
     }
 }

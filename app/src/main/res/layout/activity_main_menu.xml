@@ -9,6 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.dvr.mel.dronevoicerecognition.MainMenuActivity"
+    android:transitionName="fade"
 
     android:background="@color/colorAccent">
 
@@ -27,6 +28,7 @@
             android:id="@+id/manageCorpusesButton"
             android:background="@color/colorPrimary"
             android:layout_margin="10dp"
+            android:onClick="startManageCorpusesActivity"
             android:textColor="@color/colorAccent" />
 
         <Button

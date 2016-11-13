@@ -15,9 +15,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainMenuActivity"
-            android:parentActivityName=".LauncherActivity">
-
+        <activity
+            android:name=".MainMenuActivity"
+            android:parentActivityName=".LauncherActivity"></activity>
+        <activity
+            android:name=".ManageCorpusesActivity"
+            android:label="@string/title_activity_manage_corpuses"
+            android:parentActivityName=".MainMenuActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.dvr.mel.dronevoicerecognition.MainMenuActivity" />
         </activity>
     </application>
 
