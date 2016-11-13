@@ -118,12 +118,9 @@ public class MicTestActivity extends AppCompatActivity {
 Log.i("MicTestActivity", "hello activity");
         mic = new MicWavRecorder(1.F, 4.F, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
                                 // Create a Mic recording a Wav file @ 16Khz, 16 bits in mono
-        mic.start(); // start a MicWavRecorder thread
-        mic.record("/DATA/APP/com.dvr.mel.dronevoicerecognition/corpus/Debug/Test.wav");
-        // mic.record("blabla");
-        mic.close(); // close the thread
-        //TODO what will happen cause we start the thread but it has no goal, no file at the beginning
-        // => need to fix that asap
+        mic.record("/DATA/APP/com.dvr.mel.dronevoicerecognition/corpus/Debug/Test.wav"); // start recording Test.wav
+        // mic.record("blabla");  // start recording blabla
+        mic.close(); // close all the stream
     }
 
     @Override

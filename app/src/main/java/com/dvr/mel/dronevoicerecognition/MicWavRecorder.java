@@ -13,12 +13,9 @@ import java.io.IOException;
 
 /**
  * Created by Aryetis on 11/11/16.
- * TODO : _ create mic inputStream
- *        _ autodetect when user talks
- *        _ get the input stream of the user talking
- *        _ clean it using "silence sample"
- *        _ throw some nice equalizer in there
- * IDEA : _ find a way to calibrate the mic => register silence and substract it to recordings
+ * TODO : _ throw some nice equalizer in there
+ *        _ add return value to record() to confirm the operation
+ * IDEA : _ find a way to calibrate the mic => register silence and subtract it to recordings
  */
 
 /*
@@ -26,14 +23,14 @@ import java.io.IOException;
  *               SAMPLE_RATE must be storable on 4 bytes ... should not be a problem except if you record at some bat shit crazy sample rate
  */
 
-class MicWavRecorder extends Thread
+class MicWavRecorder
 {
     /**** USER DETERMINED VARIABLES ***/
     // Sensibility settings
     private float DURATION_WINDOW; // in our usecase<=>1.F for 1 second
                                    // duration of the sample used to detect spike / detect
                                    // when the user speaks
-                                   // empirical determined valuee
+                                   // empirical determined value
                                    // => Tweak it, increase if the sentence are cut
                                    // in multiple words
     private float SENSITIVITY; // in our usecase<=>4.F;
@@ -60,11 +57,11 @@ class MicWavRecorder extends Thread
                                    // TODO : add clearAudio() function in the future to clear the signal by substracting silence to it
     private long audioLength=0;
     // Output file and stream variable
-    private File outputFile; // outputFile (should be something like
+    private File outputFile = null; // outputFile (should be something like
                      // "/DATA/APP/com.dvr.mel.dronevoicerecognition/corpus/[UserName]/[orderName].wav"
     private FileOutputStream outputStream ; // stream used to fill the outputFile
     // Running state machine's variable
-    private volatile boolean runningState = true; // bool used to stop the thread
+    private boolean runningState = true; // bool used to stop the main loop
     private boolean userSpeaking = false; // bool used to determine whether the user is speaking or not
     // Mess
     private float bufferAvgAmp = 0; // buffer's average amplitude
@@ -75,9 +72,6 @@ class MicWavRecorder extends Thread
                           int CHANNEL_MODE_, int ENCODING_FORMAT_
                   )
     {
-        // set Thread priority to high to avoid it being canceled by Android because shenanigans
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
-
         // setting USER DETERMINED VARIABLES
         DURATION_WINDOW = DURATION_WINDOW_;
         SENSITIVITY = SENSITIVITY_;
@@ -98,34 +92,44 @@ class MicWavRecorder extends Thread
                                                 // in our usecase<=>1 second long
         byteStreamBuffer = new byte[bufferLength*2]; // need twice as many element cause we converting 2 bytes into 2*1 byte
         silenceBuffer = new short[bufferLength]; // "silence measurement" buffer, used to clear recordings
-
-        // starting mic
-        mic.startRecording();
     }
 
 
 
-    public void run()
-    { // called by start() due to Java's Thread System
+    void record(String fileAddress)
+    {
+        // Set the outputFile of the mic stream
+        try
+        {
+            outputFile = new File(fileAddress);
+            outputStream = new FileOutputStream(outputFile, false); //overWrite the file if it exists
+
+            if (!outputFile.exists())
+                outputFile.createNewFile();
+
+            // write DUMMY Wav header, will be completed after the recording cause we need to know
+            // PCM Audio's Length before writing it
+            byte[] header = new byte[44];
+            outputStream.write(header, 0, 44);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
 
         /***********************************************
          *                                              *
-         *      main method, here goes the Magiku!      *
+         *       main loop, here goes the Magiku!       *
          *                                              *
          ***********************************************/
 
-        while(runningState) // TODO modify so we only loop when buffer is full
+        while(runningState) // TODO modify so we only loop when buffer is full && we get out when the word is recorded
         {
             detectAudioSpike(); // detect audio Spike <=> update userSpeaking value
-
-            if(userSpeaking)
-            {   // user is speaking
-                writeStreamBufferToOutputStream(); // write streamBuffer into outputStream
-            }
-            else
-            {   // user stopped talking
-                // => write audiofile && update its header
-                //    && get new filepath to write into or END_SIGNAL //TODO END_SIGNAL
+                                // handle beginning AND end of the recording
+            if (userSpeaking)
+            {   // user is still speaking
+                // handle middle of the recording
                 writeStreamBufferToOutputStream(); // write streamBuffer into outputStream
             }
         }
@@ -135,8 +139,6 @@ class MicWavRecorder extends Thread
 
     void close()
     {
-        // stopping the Thread loop
-        runningState = false;
         // closing microphone
         mic.stop();
         // close FileOutputStream
@@ -149,19 +151,9 @@ class MicWavRecorder extends Thread
             e.printStackTrace();
         }
 
-        // stop the thread ... Yes that's how you do it in Java nowadays with a volatile variable
-        // ... It's fugly
+        // stop the main loop
         runningState = false;
     }
-
-
-
-    /***********************************************
-     *                                              *
-     *      Microphone / Audio related methods      *
-     *                                              *
-     ***********************************************/
-
 
 
 
@@ -169,7 +161,7 @@ class MicWavRecorder extends Thread
     {
         // Detect an amplitude spike in the Mic input stream (sudden silence, sudden noise)
         // And write accordingly in the outputStream
-        // Also update the userSpeaking value for the run loop
+        // Also update the userSpeaking value for the main loop
 
         float newBufferAvgAmp=0.F;
 
@@ -200,7 +192,7 @@ class MicWavRecorder extends Thread
 Log.i("MicWavRecorder", "User started talking");
             // flushing streamBuffer into the outputStream
             writeStreamBufferToOutputStream(); // write streamBuffer into outputStream
-            // updating userSpeaking's value for the run loop
+            // updating userSpeaking's value for the main loop
             userSpeaking = true;
             // updating bufferAvgAmp
             bufferAvgAmp = newBufferAvgAmp;
@@ -225,10 +217,13 @@ Log.i("MicWavRecorder", "User stoped talking");
 
             // updating the header
             writeWavHeader();
-            // updating userSpeaking's value for the run loop
+            // updating userSpeaking's value for the main loop
             userSpeaking = false;
             // updating bufferAvgAmp
             bufferAvgAmp = newBufferAvgAmp;
+            // set the outputFile to null
+            // so it won't overwrite the current file if user speaks again after the recording
+            outputFile = null;
             return true;
         }
         // no spike detected
@@ -239,28 +234,6 @@ Log.i("MicWavRecorder", "User stoped talking");
     }
 
 
-
-    void record(String fileAdress)
-    {
-        // Set the outputFile of the mic stream
-        try
-        {
-            outputFile = new File(fileAdress);
-            outputStream = new FileOutputStream(outputFile, false); //overWrite the file if it exists
-
-            if (!outputFile.exists())
-                outputFile.createNewFile();
-
-            // write DUMMY Wav header, will be completed after the recording cause we need to know
-            // PCM Audio's Length before writing it
-            byte[] header = new byte[44];
-            outputStream.write(header, 0, 44);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
 
     private void writeWavHeader()
     {
