@@ -30,6 +30,11 @@ import java.util.List;
  *        creation and deletion (partially throught MicWavRecorder)                             *
  *      _
  *                                                                                              *
+ *                                                                                              *
+ *
+ * Sidenotes : When starting a recording session if it is not done till completion              *
+ *             no file will be kept. Thus RErecording a corpus will erase the first one         *
+ *             regardless if the user complete the second corpus recording session or not !!!!  *
  ************************************************************************************************/
 
 /*****************************************
@@ -55,7 +60,7 @@ List<String> commandList = new ArrayList<>();
 // TODO declare those /\ elsewhere when merging projects
 
     // Class variables
-    MicWavRecorder mic;
+    MicWavRecorderHandler mic;
     int curCommandListIndex = 0; // iterator used to iterate over the commandList list
 
     // UI accessors variables
@@ -89,7 +94,7 @@ Button debug_btn; // DEBUG : used to force validation of the current command
         {
             public void onClick(View v)
             {
-                recordPreviousCommand();
+                previousCommand();
             }
         });
 debug_btn = (Button) findViewById(R.id.debug_button); // Initializing UI accessor
@@ -97,7 +102,7 @@ debug_btn.setOnClickListener(new View.OnClickListener() // Setting OnClickListen
 {
     public void onClick(View v)
     {
-        recordNextCommand();
+        nextCommand();
     }
 });
         /*********************************************************/
@@ -119,10 +124,10 @@ commandList.add("test5");
         // Initialize MicWavRecorder
         try
         {
-            mic = new MicWavRecorder( 16000, AudioFormat.CHANNEL_IN_MONO,
+            mic = new MicWavRecorderHandler( 16000, AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT, this);
         }
-        catch (MicWaveRecorderException e)
+        catch (MicWavRecorderHandlerException e)
         {
             e.printStackTrace();
             System.exit(0);
@@ -148,7 +153,7 @@ commandList.add("test5");
 
 
 
-    private void recordPreviousCommand()
+    private void previousCommand()
     {
         // TODO delete existing file record, no leftovers, it's all or nothing
 //        File foo =
@@ -160,7 +165,7 @@ commandList.add("test5");
 
 
 
-    public void recordNextCommand()
+    public void nextCommand()
     {
         curCommandListIndex++;
         updateUI();
@@ -223,7 +228,7 @@ System.exit(0);
     private void goToNextActivity()
     {
         // close & clean mic (File, outputStreap, thread, etc)
-        mic.close(); //TODO reenable when Mic will be correctly initialized
+        mic.close();
 //TODO  \/ to replace with correct Load()
 Log.i("MicTestActivity", "goToNextActivity");
 try { Thread.sleep(2000); } catch (InterruptedException e) {e.printStackTrace(); }
