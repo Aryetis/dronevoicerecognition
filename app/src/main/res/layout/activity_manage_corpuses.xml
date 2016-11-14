@@ -13,27 +13,37 @@
     tools:theme="@style/AppTheme"
     android:background="@color/colorAccent">
 
-    <ListView
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentEnd="true" />
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/corpuses_listview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:orientation="vertical"
+            android:visibility="visible" />
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/plusFAB"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:src="@drawable/ic_plus"
+        app:elevation="10dp"
+        tools:ignore="RelativeOverlap"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="26dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        app:backgroundTint="@color/colorPrimary"
+        app:borderWidth="0dp"
+        android:scaleType="center"
+        app:fabSize="normal"
+
+        />
 
 
-    <!--
-       <android.support.design.widget.FloatingActionButton
-           android:id="@+id/plusFAB"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:src="@drawable/ic_plus"
-           app:elevation="10dp"
-       />
-      <ImageButton
-
-           android:layout_width="65dp"
-           android:layout_height="65dp"
-           app:srcCompat="@drawable/ic_plus"
-           android:id="@+id/manageCorpusPlusButton"
-           android:layout_alignParentBottom="true"
-           android:layout_alignParentStart="true"
-           android:background="@drawable/custom_floating_button" />-->
 </RelativeLayout>

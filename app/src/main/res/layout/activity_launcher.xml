@@ -38,6 +38,7 @@
         android:layout_marginBottom="28dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:onClick="startMainMenuActivity" />
+        android:onClick="startMainMenuActivity"
+        />
 
 </RelativeLayout>
