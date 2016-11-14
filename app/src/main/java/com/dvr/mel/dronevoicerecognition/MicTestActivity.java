@@ -26,12 +26,16 @@ import java.util.List;
  *      _ pass corpusName to child Activity's Intent                                            *
  *      _ Use MicWavRecorder to record a list audio according to corpusList                     *
  *      _ Handle /DATA/APP/com.dvr.mel.dronevoicerecognition/Corpus/[USER_NAME]/[COMMAND].wav   *
- *        creation and deletion                                                                 *
+ *        creation and deletion (partially throught MicWavRecorder)                             *
  *      _
  *                                                                                              *
  ************************************************************************************************/
 
-
+/*****************************************
+ * TODO List, what to tackle first:
+ *          _ correctly circle throught the list based on MicWavRecorder signals (all that code should be withing MicWavRecorder)
+ *          _ replace debug_talking_indicator_tv by a stock default progressBar <=> circle thingy
+ */
 
 
 public class MicTestActivity extends Activity
@@ -114,7 +118,7 @@ debug_talking_indicator_tv = (TextView) findViewById(R.id.debugTalkIndicator);
         // Initialize MicWavRecorder
         try
         {
-            mic = new MicWavRecorder(1.F, 4.F, 16000, AudioFormat.CHANNEL_IN_MONO,
+            mic = new MicWavRecorder( 16000, AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT, this);
         }
         catch (MicWaveRecorderException e)
