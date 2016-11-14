@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/dronevoicerecognition.iml" filepath="$PROJECT_DIR$/dronevoicerecognition.iml" />
       <module fileurl="file://$PROJECT_DIR$/dronevoicerecognition-github.iml" filepath="$PROJECT_DIR$/dronevoicerecognition-github.iml" />
     </modules>
   </component>

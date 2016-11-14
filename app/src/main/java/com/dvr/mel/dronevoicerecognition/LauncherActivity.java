@@ -1,5 +1,6 @@
 package com.dvr.mel.dronevoicerecognition;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -11,11 +12,13 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class LauncherActivity extends Activity {
+public class LauncherActivity extends AppCompatActivity {
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle("Welcome!");
+
         super.onCreate(savedInstanceState);
 
         //Remove title bar
@@ -26,6 +29,10 @@ public class LauncherActivity extends Activity {
 
         //Set content view
         setContentView(R.layout.activity_launcher);
+
+        //Support remove action bar
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
 
         //Custom font
         TextView tx = (TextView)findViewById(R.id.launcherTitle);
