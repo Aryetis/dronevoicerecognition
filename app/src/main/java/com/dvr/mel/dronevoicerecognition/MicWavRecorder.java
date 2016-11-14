@@ -3,20 +3,34 @@ package com.dvr.mel.dronevoicerecognition;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-/**
- * Created by Aryetis on 11/11/16.
- */
+/************************************************************************************************
+ *  MicWavRecorder in a nutshell:                                                               *
+ *      _ TODO WRITE SOMETHING CLEVER HERE                                                      *
+ *                                                                                              *
+ ************************************************************************************************/
 
 /*****************************************
- * TODO : _ Find a way to return a signal to MicTestActivity to trigger recordNextCommand()
- *          or find a way to make recordNextCommand() a static method
+ * TODO List, what to tackle first:
+ *          _ detectAudioSpike simili function
+ *          _ creation and suppression of file
+ *          _ recording of audio stream in those file
+ *          _ chill out
  */
 
+// custom Exception
+class MicWaveRecorderException extends Exception
+{
+    public MicWaveRecorderException(String message)
+    {
+        super(message);
+    }
+}
 
 public class MicWavRecorder extends Thread
 {
@@ -28,7 +42,8 @@ public class MicWavRecorder extends Thread
 
     /**** USER DETERMINED VARIABLES ***/
     // Sensibility settings (empiric values)
-    private float DURATION_WINDOW; // expressed in second
+    // private float DURATION_WINDOW; // expressed in second
+                                   // TODO currently based on getMinBufferSize, maybe need to tweak it, input it manually later on
                                    // in our usecase<=>1.F for 1 second
                                    // duration of the sample used to detect spike / detect
                                    // when the user speaks
@@ -51,6 +66,7 @@ public class MicWavRecorder extends Thread
     /**** INTERN CLASS VARIABLES ***/
     // AudioRecorder and buffers
     private AudioRecord mic;
+    private int bufferSize; // expressed in second
     private int bufferLength; // length of streamBuffer and silenceBuffer
     private short[] streamBuffer; // buffer used to constantly listen to the mic
     private byte[] byteStreamBuffer; // streamBuffer converted into a byte buffer
@@ -67,6 +83,7 @@ public class MicWavRecorder extends Thread
     private boolean userSpeaking = false; // bool used to determine whether the user is speaking or not
     // Mess
     private float bufferAvgAmp = 0; // buffer's average amplitude
+    private MicTestActivity activity; // Activity "linked to"/"which started" this MicWavRecorder
 
 
     /***************************************************
@@ -77,28 +94,48 @@ public class MicWavRecorder extends Thread
 
 
     MicWavRecorder(float DURATION_WINDOW_, float SENSITIVITY_, long SAMPLE_RATE_,
-                   int CHANNEL_MODE_, int ENCODING_FORMAT_)
+                   int CHANNEL_MODE_, int ENCODING_FORMAT_, MicTestActivity activity_) throws MicWaveRecorderException
     {
         // Initializing "USER DETERMINED VARIABLES"
-        DURATION_WINDOW = DURATION_WINDOW_;
         SENSITIVITY = SENSITIVITY_;
         SAMPLE_RATE = SAMPLE_RATE_;
         CHANNEL_MODE = CHANNEL_MODE_;
         ENCODING_FORMAT = ENCODING_FORMAT_;
 
-        // setting "INTERN CLASS VARIABLES"
-        // Microphone Initialization
+        //setting "INTERN CLASS VARIABLES"
+        //Microphone Initialization
+        bufferSize = 2*AudioRecord.getMinBufferSize((int)SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
         mic = new AudioRecord( MediaRecorder.AudioSource.MIC,
                 (int)SAMPLE_RATE,
                 CHANNEL_MODE,
                 ENCODING_FORMAT,
-                (int)(SAMPLE_RATE*DURATION_WINDOW)); // mic always on, completing a circular buffer
-                                                     // use detectAudioSpike() to detect if buffer is relevant or not
-        bufferLength = (int)(SAMPLE_RATE*DURATION_WINDOW); // setting the length of our buffers
-        streamBuffer = new short[bufferLength]; // buffer used to constantly listen to the mic
-        // in our usecase<=>1 second long
-        byteStreamBuffer = new byte[bufferLength*2]; // need twice as many element cause we converting 2 bytes into 2*1 byte
-        silenceBuffer = new short[bufferLength]; // "silence measurement" buffer, used to clear recordings
+                bufferSize );
+        //(int)(SAMPLE_RATE*DURATION_WINDOW));
+                                // mic always on, completing a circular buffer
+                                // use detectAudioSpike() to detect if buffer is relevant or not
+        Log.i("MicWavRecorder", "State"+mic.getState()); // check that AudioRecord has been correctly instantiated
+        if ( mic.getState() != AudioRecord.STATE_INITIALIZED ) throw new MicWaveRecorderException("Couldn't instantiate AudioRecord properly");
+
+        // Initializing buffers
+        silenceBuffer = new short[bufferSize];
+        streamBuffer = new short[bufferSize];
+        byteStreamBuffer = new byte[bufferSize*2];
+// Legacy code (may become useful again if we need to tweak bufferSize / "record windows size")
+// bufferLength = (int)(SAMPLE_RATE*DURATION_WINDOW); // setting the length of our buffers
+// streamBuffer = new short[bufferLength]; // buffer used to constantly listen to the mic
+// // in our usecase<=>1 second long
+// byteStreamBuffer = new byte[bufferLength*2]; // need twice as many element cause we converting 2 bytes into 2*1 byte
+// silenceBuffer = new short[bufferLength]; // "silence measurement" buffer, used to clear recordings
+
+        // Link current MivWavRecorder to a MicTestActivity .... Kinda fugly but this workaround will do for now
+        activity = activity_;
+
+        // Set output file and stream
+        // setOutput(fileName); // TODO emplacement à revoir, maybe should be fixed only when spikeDetected
+
+        // Start recording with the mic
+        mic.startRecording();
+
     }
 
 
@@ -107,15 +144,11 @@ public class MicWavRecorder extends Thread
     {
         // closing microphone
         mic.stop();
+        mic.release();
+
         // close FileOutputStream
-        try
-        {
-            outputStream.close();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        //try { outputStream.close(); } //TODO reenable when File creation is handled correctly
+        //catch (IOException e) { e.printStackTrace(); }
 
         // stop the run loop / thread
         runningState = false;
@@ -136,7 +169,7 @@ public class MicWavRecorder extends Thread
     {
         while(true)
         {
-
+            activity.recordNextCommand();
         }
     }
 
@@ -198,16 +231,7 @@ public class MicWavRecorder extends Thread
         header[42]=(byte) ((audioLength >> 16) & 0xff); header[43]=(byte) ((audioLength >> 24) & 0xff); // Actual Audio Data (PCM) length
 
         // Write completed header
-        try
-        {
-            outputStream.write(header, 0, 44);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        try { outputStream.write(header, 0, 44); }
+        catch (IOException e) { e.printStackTrace(); }
     }
-
-
-
 }

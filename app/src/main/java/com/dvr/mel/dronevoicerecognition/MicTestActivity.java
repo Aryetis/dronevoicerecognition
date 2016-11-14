@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,18 @@ import java.util.List;
  * IS FOR DEBUG PURPOSES ONLY AND THUS MUST BE REMOVED BEFORE MERGING *
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  *
  **********************************************************************/
+
+/************************************************************************************************
+ *  MicTestActivity in a nutshell:                                                              *
+ *      _ get corpusName and corpusList from Parent Activity's Intent                           *
+ *      _ pass corpusName to child Activity's Intent                                            *
+ *      _ Use MicWavRecorder to record a list audio according to corpusList                     *
+ *      _ Handle /DATA/APP/com.dvr.mel.dronevoicerecognition/Corpus/[USER_NAME]/[COMMAND].wav   *
+ *        creation and deletion                                                                 *
+ *      _
+ *                                                                                              *
+ ************************************************************************************************/
+
 
 
 
@@ -31,7 +45,7 @@ public class MicTestActivity extends Activity
     // Global variables
 // TODO declare those \/ elsewhere when merging projects
 String corpusName="DEBUG";
-String appFolderName="/DATA/APP/com.dvr.mel.dronevoicerecognition/";
+String appFolderName="/DATA/APP/com.dvr.mel.dronevoicerecognition/Corpus/";
 List<String> commandList = new ArrayList<>();
 // TODO declare those /\ elsewhere when merging projects
 
@@ -98,8 +112,22 @@ commandList.add("test5");
 debug_talking_indicator_tv = (TextView) findViewById(R.id.debugTalkIndicator);
 
         // Initialize MicWavRecorder
-        mic = new MicWavRecorder(1.F, 4.F, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        try
+        {
+            mic = new MicWavRecorder(1.F, 4.F, 16000, AudioFormat.CHANNEL_IN_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT, this);
+        }
+        catch (MicWaveRecorderException e)
+        {
+            e.printStackTrace();
+            System.exit(0);
+        }
         mic.start(); // start MicWavRecorder thread
+
+        // TODO create Corpus directory && add to CorpusList intent
+        // if already existing delete directory and its content
+
+        // set output here ?
 
         // Initialize UI
         updateUI();
@@ -118,14 +146,16 @@ debug_talking_indicator_tv = (TextView) findViewById(R.id.debugTalkIndicator);
     private void recordPreviousCommand()
     {
         // TODO delete existing file record, no leftovers, it's all or nothing
-
+//        File foo =
+//                if exists
+//                    delete
         curCommandListIndex--;
         updateUI();
     }
 
 
 
-    private void recordNextCommand()
+    public void recordNextCommand()
     {
         curCommandListIndex++;
         updateUI();
@@ -141,7 +171,7 @@ debug_talking_indicator_tv = (TextView) findViewById(R.id.debugTalkIndicator);
             case -1:
             { // getting back to Menu
                 goToPreviousActivity();
-                break;
+                return;
             }
             case 0:
             {  // stage zero, back_button.text <=> cancel
@@ -150,9 +180,10 @@ debug_talking_indicator_tv = (TextView) findViewById(R.id.debugTalkIndicator);
             }
             default:
             {
-                if ( curCommandListIndex > commandList.size() )
-                {
+                if ( curCommandListIndex >= commandList.size() )
+                {   // curCommandListIndex is getting out of Bound<=>we reached the end of our commandList
                     goToNextActivity();
+                    return;
                 }
                 else
                 {  // Standard behavior, at least one record previously registered
@@ -173,6 +204,8 @@ setDebugTalkIndicator(false);
 
     private void goToPreviousActivity()
     {
+        // TODO delete directory  && delete CorpusList intent Entry
+
         // close & clean mic (File, outputStream, thread, etc)
         mic.close();
 //TODO  \/ to replace with correct Load()
@@ -185,9 +218,10 @@ System.exit(0);
     private void goToNextActivity()
     {
         // close & clean mic (File, outputStreap, thread, etc)
-        mic.close();
+        mic.close(); //TODO reenable when Mic will be correctly initialized
 //TODO  \/ to replace with correct Load()
 Log.i("MicTestActivity", "goToNextActivity");
+try { Thread.sleep(2000); } catch (InterruptedException e) {e.printStackTrace(); }
 System.exit(0);
     }
 
