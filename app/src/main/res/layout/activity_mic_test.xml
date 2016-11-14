@@ -37,14 +37,12 @@
         android:layout_centerHorizontal="true"
         android:id="@+id/back_button" />
 
-    <TextView
-        android:text="debugTalkIndicator"
+    <ProgressBar
+        style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/debug_button"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="23dp"
-        android:layout_marginBottom="12dp"
-        android:id="@+id/debugTalkIndicator"
-        android:textSize="18sp" />
+        android:layout_marginBottom="66dp"
+        android:id="@+id/talk_indicator"
+        android:layout_above="@+id/back_button"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>

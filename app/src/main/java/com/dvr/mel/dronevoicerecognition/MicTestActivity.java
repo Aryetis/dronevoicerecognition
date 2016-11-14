@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.File;
@@ -34,7 +35,7 @@ import java.util.List;
 /*****************************************
  * TODO List, what to tackle first:
  *          _ correctly circle throught the list based on MicWavRecorder signals (all that code should be withing MicWavRecorder)
- *          _ replace debug_talking_indicator_tv by a stock default progressBar <=> circle thingy
+ *          _ take care of changing talkingIndicator state / visibility
  */
 
 
@@ -59,7 +60,7 @@ List<String> commandList = new ArrayList<>();
 
     // UI accessors variables
     TextView tv; // Display the currently recording command
-TextView debug_talking_indicator_tv; // DEBUG : used to display if the user is talking or not
+    ProgressBar talkingIndicator; // Circle Display bar, indicate when the app is recording
     Button back_btn; // Allow the user to go back to previous recording/Activity
 Button debug_btn; // DEBUG : used to force validation of the current command
 
@@ -113,7 +114,7 @@ commandList.add("test5");
 
         // initialize UI accessors
         tv = (TextView) findViewById(R.id.backgroundTextView);
-debug_talking_indicator_tv = (TextView) findViewById(R.id.debugTalkIndicator);
+        talkingIndicator = (ProgressBar) findViewById(R.id.talk_indicator);
 
         // Initialize MicWavRecorder
         try
@@ -200,8 +201,8 @@ debug_talking_indicator_tv = (TextView) findViewById(R.id.debugTalkIndicator);
         // update backgroundTextView
         tv.setText(commandList.get(curCommandListIndex));
 
-// set debugTalkingIndicator
-setDebugTalkIndicator(false);
+        // update debugTalkingIndicator's state
+        talkingIndicator.setVisibility(View.INVISIBLE); // TODO handle change of state
     }
 
 
@@ -237,9 +238,5 @@ System.exit(0);
  *                     \/                          *
  ***************************************************/
 
-public void setDebugTalkIndicator(boolean b)
-{
-debug_talking_indicator_tv.setText( (b) ? "TALKING" : "SILENCE" );
-}
 
 }
