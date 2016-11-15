@@ -19,7 +19,8 @@ import java.io.IOException;
 
 public class WavStreamHandler extends Thread
 {
-
+    private boolean userSpeaking = false; // boolean describing if user is currently speaking or not (using audioAnalyser)
+    private boolean finishedRecordingCurrentCommand = false; // TODO
     private float SENSITIVITY; // in our usecase<=>4.F;
     // Used to detect volume spikes
     // trigger "spike detected" flag when the actual
@@ -31,6 +32,7 @@ public class WavStreamHandler extends Thread
     private MicWavRecorderHandler micHandler;
 
     private float bufferAvgAmp = 0; // buffer's average amplitude
+    //static private short[] streamBuffer; // work on a copy of MicWavRecorderHandler ... just in case
     static private byte[] byteStreamBuffer; // streamBuffer converted into a byte buffer
     // doing this because outputStream can only work with byte[]
     static private short[] silenceBuffer; // "silence measurement" buffer, used to clear recordings
@@ -43,8 +45,11 @@ public class WavStreamHandler extends Thread
     // "/DATA/APP/com.dvr.mel.dronevoicerecognition/corpus/[UserName]/[orderName].wav"
     private FileOutputStream outputStream ; // stream used to fill the outputFile
 
+    // just some shortcut for more readability (should be pointers and not copy if java is smart enough ....)
     int bufferSize = micHandler.bufferSize; // TODO yes it's useless for the code
                                             // but it maintains what remains of my mental sanity
+
+    private volatile boolean runningState = true;
 
 
     WavStreamHandler(MicWavRecorderHandler micHandler_)
@@ -55,15 +60,77 @@ public class WavStreamHandler extends Thread
         byteStreamBuffer = new byte[bufferSize*2];
         //TODO check state of mic, no need to start checking if buffer is useful before mic is even turned on
 
+
+        // Set output file and stream
+        // setOutput(fileName); // TODO : YES !!! SET FIRST fileOutput in onCreate
+        // and set the next one at the END OF RECORDING,
+        // don't waste time and resources waiting for the second recording to start
+
+
+
+
     }
 
     @Override
     public void run()
     {
-        // Not much to do
-        // This thread is called periodically by its static method
-        // but other than that it has nothing to work on its own
-        // TODO : There has to be a better design out there ..... big F to java for """"securing"""" their Thread
+
+        while (runningState)
+        {
+            // wait for streamBuffer to be filled, don't work on half baked streamBuffer
+            // thread waken up by MicWavRecorderHandler's run loop with notify()
+            try { this.wait(); } catch (InterruptedException ie) { ie.printStackTrace();}
+
+            // pull streamBuffer from queue and work on it
+
+
+try { Thread.sleep(2000); } catch (Exception e) { e.printStackTrace(); }
+// update UI
+micHandler.activity.runOnUiThread(new Runnable() {
+@Override
+public void run() {
+    micHandler.activity.nextCommand();
+}
+});
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        // while (volatile bool)
+        // wait for notification
+        // copy streamBuffer
+        // if ( bufferIsRelevant )
+        // // DO STUFF
+        //
+
+
+        // Eventually request for next command to evaluate (or be killed by MicTestActivity)
+        // TODO move this part to the WavStreamHandler thread to loose ZERO time between each streamBuffer update
+        // TODO SECOND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//        if ( finishedRecordingCurrentCommand )
+//        {   //request next Command .... must go throught runOnUiThread because
+//            // even with activity being MicTestActivity (aka the UI)
+//            // android traces back the call from a "non UI" context and refuses to access Views
+//            activity.runOnUiThread(new Runnable()
+//            {
+//                @Override
+//                public void run() {
+//                    activity.nextCommand();
+//                }
+//            });
+//            finishedRecordingCurrentCommand = false;
+//        }
     }
 
 
@@ -79,20 +146,42 @@ public class WavStreamHandler extends Thread
     private double getRMSValue()
     {
         // return RMS value of streamBuffer
-        double rmsVal=0.F;
+//        double rmsVal=0.F;
+//
+//        for( short s : micHandler.streamBuffer )
+//        {
+//            rmsVal+=s*s;
+//        }
+//
+//        return Math.sqrt(rmsVal/bufferSize);
 
-        for( short s : micHandler.streamBuffer )
-        {
-            rmsVal+=s*s;
-        }
-
-        return Math.sqrt(rmsVal/bufferSize);
+        return 0.f;
     }
 
     public void close()
     {
+
+        // close FileOutputStream
+        //try { outputStream.close(); } //TODO reenable when File creation is handled correctly
+        //catch (IOException e) { e.printStackTrace(); }
+        // close File
+
         //TODO
     }
+
+
+
+    public void computeStreamBuffer()
+    {
+
+    }
+
+
+
+
+
+
+
 
 
 

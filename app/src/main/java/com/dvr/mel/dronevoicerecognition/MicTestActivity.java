@@ -1,5 +1,6 @@
 package com.dvr.mel.dronevoicerecognition;
 
+// UI imports
 import android.app.Activity;
 import android.media.AudioFormat;
 import android.os.Bundle;
@@ -8,40 +9,32 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import java.io.File;
+// Corpus management imports
 import java.util.ArrayList;
 import java.util.List;
 
 
-/**********************************************************************
- * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  *
- * BY NOTATION, EVERY CODE THAT IS NOT ALIGNED / @ FIRST COLUMN       *
- * IS FOR DEBUG PURPOSES ONLY AND THUS MUST BE REMOVED BEFORE MERGING *
- * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  *
- **********************************************************************/
 
 /************************************************************************************************
  *  MicTestActivity in a nutshell:                                                              *
  *      _ get corpusName and corpusList from Parent Activity's Intent                           *
  *      _ pass corpusName to child Activity's Intent                                            *
- *      _ Use MicWavRecorder to record a list audio according to corpusList                     *
- *      _ Handle /DATA/APP/com.dvr.mel.dronevoicerecognition/Corpus/[USER_NAME]/[COMMAND].wav   *
- *        creation and deletion (partially throught MicWavRecorder)                             *
- *      _
+ *      _ Use MicWavRecorderHandler (& WavStreamHandler) to record                              *
+ *        a list of Wav audio files according to corpusList                                     *
  *                                                                                              *
+ *  Sidenotes :                                                                                 *
+ *  _ If it helps, see Mic related Activities as MVC designed activities,                       *
+ *    with MicTestActivity being the View,                                                      *
+ *    MicWavRecorderHandler being a model, the middle-man between UI and IO Files related stuff *
+ *    and WavStreamHandler computing the streams (Mic and IO) and sending update signal to      *
+ *    the MicTestActivity/View                                                                  *
+ *  _ When starting a recording session if it is not done till completion no file will be kept. *
+ *    Thus RErecording an already existing corpus will erase it regardless if the user          *
+ *    complete the second corpus recording session or not !!!!                                  *
  *                                                                                              *
- *
- * Sidenotes : When starting a recording session if it is not done till completion              *
- *             no file will be kept. Thus RErecording a corpus will erase the first one         *
- *             regardless if the user complete the second corpus recording session or not !!!!  *
  ************************************************************************************************/
 
-/*****************************************
- * TODO List, what to tackle first:
- *          _ correctly circle throught the list based on MicWavRecorder signals (all that code should be withing MicWavRecorder)
- *          _ take care of changing talkingIndicator state / visibility
- */
+
 
 
 public class MicTestActivity extends Activity
@@ -56,12 +49,13 @@ public class MicTestActivity extends Activity
 // TODO declare those \/ elsewhere when merging projects
 String corpusName="DEBUG";
 String appFolderName="/DATA/APP/com.dvr.mel.dronevoicerecognition/Corpus/";
-List<String> commandList = new ArrayList<>();
+List<String> commands = new ArrayList<>();
 // TODO declare those /\ elsewhere when merging projects
 
     // Class variables
     MicWavRecorderHandler mic;
-    int curCommandListIndex = 0; // iterator used to iterate over the commandList list
+    private int curCommandListIndex = 0; // iterator used to iterate over the commandList list
+    private boolean recordingState = false;
 
     // UI accessors variables
     TextView tv; // Display the currently recording command
@@ -110,11 +104,11 @@ debug_btn.setOnClickListener(new View.OnClickListener() // Setting OnClickListen
 
         /********* Actual Variables initialization *********/
 // TODO initialize those \/ elsewhere when merging projects
-commandList.add("test1");
-commandList.add("test2");
-commandList.add("test3");
-commandList.add("test4");
-commandList.add("test5");
+commands.add("test1");;
+commands.add("test2");
+commands.add("test3");
+commands.add("test4");
+commands.add("test5");
 // TODO initialize those /\ elsewhere when merging projects
 
         // initialize UI accessors
@@ -126,18 +120,15 @@ commandList.add("test5");
         {
             mic = new MicWavRecorderHandler( 16000, AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT, this);
+                    // create MicWavRecorder according to the audioFormat we need for this Application
+                    // <=> Recording @ 16KHz, mono, 16 bits, PCM RIFF Wav
         }
         catch (MicWavRecorderHandlerException e)
         {
             e.printStackTrace();
             System.exit(0);
         }
-        mic.start(); // start MicWavRecorder thread
-
-        // TODO create Corpus directory && add to CorpusList intent
-        // if already existing delete directory and its content
-
-        // set output here ?
+        mic.start(); // start MicWavRecorder's thread
 
         // Initialize UI
         updateUI();
@@ -155,10 +146,14 @@ commandList.add("test5");
 
     private void previousCommand()
     {
+        // Iterate to the previous command to be recorded in command's list
+        // And delete previous recording
+        // TODO : find a way to move this to WavStreamHandler properly, after it is supposed to be the controller
         // TODO delete existing file record, no leftovers, it's all or nothing
 //        File foo =
 //                if exists
 //                    delete
+        // TODO if curCommListIndexIndex <= 0, delete corpus's folder
         curCommandListIndex--;
         updateUI();
     }
@@ -167,7 +162,16 @@ commandList.add("test5");
 
     public void nextCommand()
     {
+        // iterate to the next command to be recorded listed in commands's List
         curCommandListIndex++;
+        updateUI();
+    }
+
+
+    public void setRecordingState(boolean rs)
+    {
+        // Toggle the visibility of the circle progress bar thingy during the recording
+        recordingState = rs;
         updateUI();
     }
 
@@ -190,7 +194,7 @@ commandList.add("test5");
             }
             default:
             {
-                if ( curCommandListIndex >= commandList.size() )
+                if ( curCommandListIndex >= commands.size() )
                 {   // curCommandListIndex is getting out of Bound<=>we reached the end of our commandList
                     goToNextActivity();
                     return;
@@ -204,18 +208,29 @@ commandList.add("test5");
         }
 
         // update backgroundTextView
-        tv.setText(commandList.get(curCommandListIndex));
+        tv.setText(commands.get(curCommandListIndex));
 
         // update debugTalkingIndicator's state
-        talkingIndicator.setVisibility(View.INVISIBLE); // TODO handle change of state
+        if (recordingState)
+            talkingIndicator.setVisibility(View.VISIBLE);
+        else
+            talkingIndicator.setVisibility(View.INVISIBLE);
     }
+
+
+
+
+    /***************************************************
+     *                                                 *
+     *           ACTIVITY TRANSITION METHODS           *
+     *              INTENTS MANAGEMENT                 *
+     *                                                 *
+     ***************************************************/
 
 
 
     private void goToPreviousActivity()
     {
-        // TODO delete directory  && delete CorpusList intent Entry
-
         // close & clean mic (File, outputStream, thread, etc)
         mic.close();
 //TODO  \/ to replace with correct Load()
@@ -234,14 +249,6 @@ Log.i("MicTestActivity", "goToNextActivity");
 try { Thread.sleep(2000); } catch (InterruptedException e) {e.printStackTrace(); }
 System.exit(0);
     }
-
-
-
-/***************************************************
- *           \                      /              *
- *               \DEBUG SECTION/                   *
- *                     \/                          *
- ***************************************************/
 
 
 }

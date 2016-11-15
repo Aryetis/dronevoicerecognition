@@ -6,23 +6,21 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**************************************************************************************************
  *  MicWavRecorderHandler in a nutshell:                                                          *
  *      _ Initialize a "Microphone Input Stream" using AudioRecord                                *
- *      _ smart detect when the user is talking using RMS to detect audio Amplitude spikes        *
- *          (using WavStreamHandler) this is done in another thread                 *
- *          because calculating average amplitude is obviously gonna takes times                  *
- *          doing the job in another thread we will not loose AudioStream informations for        *
- *          the time it takes to do the job and will resolve a                                    *
- *          "Consumer/Producer" problem when filling the buffer                                   *
- *      _ Handle creation and destruction of output Files                                         *
- *      _ Notify MicTestActivity's linked Activity when a recording is over                       *
+ *      _ Handle audiAnalysis / relevance and File IO operations to WavStreamHandler
+ *      _ notify WavStreamHandler's thread every time the buffer is filled
  *      // TODO actualize this, kinda based on MVC architecture
+ *
  *                                                                                                *
  *                                                                                                *
  * Limitations : don't try to use multiple MicWavRecorders at the same time... Just don't, ok ... *
- *               that wouldn't make sense anyway to grab (and modify) mic input buffer            *
+ *               this class is implementing singleton design pattern anyway, so go crazy...try it *
+ *               That wouldn't make sense anyway to grab (and modify) mic input buffer            *
  *               from multiple MicWavRecorder threads anyways,                                    *
  *               and concurrent mic input access is also prohibited                               *
  *************************************************************************************************/
@@ -33,6 +31,8 @@ import java.io.FileOutputStream;
  *          _ creation and suppression of file
  *          _ recording of audio stream in those file
  *          _ kill WavStreamHandler thread in close()
+ *          _ implement more safe barrier , make a List of streamBuffer and list of WavStreamHandler giving them ticket and stuff like that so they
+ *          work in the correct order, shouldn't be mandatory considering the size of the buffer and the operation we compute on it
  *          _ chill out
  */
 
@@ -56,29 +56,32 @@ public class MicWavRecorderHandler extends Thread
      *                                                 *
      ***************************************************/
 
-    /**** AudioRecord's settings (AUDIO FORMAT SETTINGS) ***/
+    /**** Singleton insurance****/
+    //MicWavRecorderHandler singletonInstance; //TODO when got time
+
+    /**** AudioRecord's settings (AUDIO FORMAT SETTINGS) ****/
     private long SAMPLE_RATE; // in our usecase<=>16000, 16KHz // stored in a long cause it's stored as such in a wav header
     private int CHANNEL_MODE; // in our usecase<=>AudioFormat.CHANNEL_IN_MONO<=>mono signal
     private int ENCODING_FORMAT; // in our usecase<=>AudioFormat.ENCODING_PCM_16BIT<=>16 bits
 
-    /**** intern routines's variables ***/
-    // AudioRecorder and buffers
-    private AudioRecord mic;
-    public int bufferSize; // size of following buffers
-    public static short[] streamBuffer; // buffer used to constantly listen to the mic
-
-    // Running state machine's variable
-    // Associated threads
-    private MicTestActivity activity; // Activity "linked to"/"which started" this MicWavRecorder
+    /**** Associated threads ****/
+    public MicTestActivity activity; // Activity "linked to"/"which started" this MicWavRecorder
     private WavStreamHandler audioAnalyser = new WavStreamHandler(this);
                                   // used to analyse mic's input buffer without blocking
                                   // this thread from filling it. ("Producer, Consumer" problem)
-    // MicWavRecorder's state variables
+                                  // all Files IO and Audio Analysing are delegated over there
+
+    /**** AudioRecorder and its streamBuffer, streamBufferQueue ****/
+    private AudioRecord mic;
+    public int bufferSize; // size of following buffers
+    private short[] streamBuffer; // buffer used to constantly listen to the mic
+    public Queue<short[]> streamBufferQueue; // streamBuffer filled are pushed onto this Queue, waiting for their treatment
+
+    /**** MicWavRecorder's lifespan variable ****/
     private volatile boolean runningState = true; // describe MicWavRecorder's lifespan
                                                   // by stopping its run() loop
                                                   // TODO : this is really basic thread management, to replace if enough time
-    private static boolean userSpeaking = false; // boolean describing if user is currently speaking or not (using audioAnalyser)
-    private static boolean finishedRecordingCurrentCommand = false; // TODO
+
 
 
     /***************************************************
@@ -91,12 +94,14 @@ public class MicWavRecorderHandler extends Thread
     MicWavRecorderHandler( long SAMPLE_RATE_, int CHANNEL_MODE_, int ENCODING_FORMAT_,
                     MicTestActivity activity_) throws MicWavRecorderHandlerException
     {
+//        if (singletonInstance == null)
+//            singletonInstance = this; // TODO later and better
+
         // Initializing "USER DETERMINED VARIABLES"
         SAMPLE_RATE = SAMPLE_RATE_;
         CHANNEL_MODE = CHANNEL_MODE_;
         ENCODING_FORMAT = ENCODING_FORMAT_;
 
-        //setting "INTERN CLASS VARIABLES"
         //Microphone Initialization
         bufferSize = 10*AudioRecord.getMinBufferSize((int)SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
                     // value expressed in bytes
@@ -110,16 +115,14 @@ public class MicWavRecorderHandler extends Thread
         Log.i("MicWavRecorder", "State"+mic.getState()); // check that AudioRecord has been correctly instantiated
         if ( mic.getState() != AudioRecord.STATE_INITIALIZED ) throw new MicWavRecorderHandlerException("Couldn't instantiate AudioRecord properly");
 
+        // Initializing streamBufferQueue
+        streamBufferQueue = new LinkedList<>();
+
         // Initializing buffers
         streamBuffer = new short[bufferSize];
 
         // Link current MivWavRecorder's thread to its MicTestActivity's thread
         activity = activity_;
-
-        // Set output file and stream
-        // setOutput(fileName); // TODO : YES !!! SET FIRST fileOutput in onCreate
-                                // and set the next one at the END OF RECORDING,
-                                // don't waste time and resources waiting for the second recording to start
 
         // Start the WavStreamHandler's thread that will detect audio's spikes
         audioAnalyser.start();
@@ -138,10 +141,6 @@ public class MicWavRecorderHandler extends Thread
 
         //closing AudioAnalyser
         audioAnalyser.close();
-
-        // close FileOutputStream
-        //try { outputStream.close(); } //TODO reenable when File creation is handled correctly
-        //catch (IOException e) { e.printStackTrace(); }
 
         // stop the run loop / thread
         runningState = false;
@@ -163,46 +162,22 @@ public class MicWavRecorderHandler extends Thread
         while(runningState)
         {
             // update streamBuffer
-            mic.read(streamBuffer, 0, bufferSize); // read() IS A BLOCKING METHOD !!!
+            mic.read(streamBuffer, 0, bufferSize); // read() IS A BLOCKING METHOD !!!   
                                                    // it will wait for the buffer to be filled before returning it
 
-            // Analyse streamBuffer (on another thread to not loose informations during its treatment)
-            // TODO FIRST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // add filled streamBuffer to the Queue of buffer to be analysed
+            streamBufferQueue.add(streamBuffer);
 
-            // Eventually request for next command to evaluate (or be killed by MicTestActivity)
-            // TODO move this part to the WavStreamHandler thread to loose ZERO time between each streamBuffer update
-            // TODO SECOND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            if ( finishedRecordingCurrentCommand )
-            {   //request next Command .... must go throught runOnUiThread because
-                // even with activity being MicTestActivity (aka the UI)
-                // android traces back the call from a "non UI" context and refuses to access Views
-                activity.runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run() {
-                        activity.nextCommand();
-                    }
-                });
-                finishedRecordingCurrentCommand = false;
-            }
-//DEBUG
-// update UI
-//activity.runOnUiThread(new Runnable() {
-//@Override
-//public void run() {
-//    activity.nextCommand();
-//}
-//});
+            // notify WavStreamHandler that a streamBuffer is ready to be pulled and computed
+            // delegate the analysis of streamBuffer and IO operations on another thread
+            // so buffer can be filled without waiting for its analysis / missing any audioFrames
+            audioAnalyser.notify();
         }
+
+        // wait for WavStreamHandler to finish computing the streamBuffer of the queue before closing
+        // will be waken up by a WavStreamHandler notification
+        try { this.wait(); } catch (InterruptedException ie) { ie.printStackTrace();}
     }
-
-
-
-    /***************************************************
-     *                                                 *
-     *              METHODS DECLARATION                *
-     *                                                 *
-     ***************************************************/
 
 
 
