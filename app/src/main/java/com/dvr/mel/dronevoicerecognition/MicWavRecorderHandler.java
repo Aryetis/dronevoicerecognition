@@ -54,12 +54,14 @@ public class MicWavRecorderHandler extends Thread
     public Object lock = new Object(); // shared lock with WavStreamHandler for "producer/consumer" problem resolution
 
     /**** AudioRecord's settings (AUDIO FORMAT SETTINGS) ****/
-    private long SAMPLE_RATE; // in our usecase<=>16000, 16KHz // stored in a long cause it's stored as such in a wav header
-    private int CHANNEL_MODE; // in our usecase<=>AudioFormat.CHANNEL_IN_MONO<=>mono signal
-    private int ENCODING_FORMAT; // in our usecase<=>AudioFormat.ENCODING_PCM_16BIT<=>16 bits
-
+    public long SAMPLE_RATE; // in our usecase<=>16000, 16KHz // stored in a long cause it's stored as such in a wav header
+    public int CHANNEL_MODE; // in our usecase<=>AudioFormat.CHANNEL_IN_MONO<=>mono signal
+    public int ENCODING_FORMAT; // in our usecase<=>AudioFormat.ENCODING_PCM_16BIT<=>16 bits
+    private static int BUFFER_SIZE_MULTIPLICATOR = 10; // Used to define the Audio input's buffer size
+                                                       // May need some empirical tweaking if for instance
+                                                       // the recording trigger itself over a really short but loud Audio burst
     /**** Associated threads ****/
-    public MicTestActivity activity; // Activity "linked to"/"which started" this MicWavRecorder //TODO maybe switch to private afterwards
+    public MicTestActivity uiActivity; // Activity "linked to"/"which started" this MicWavRecorder //TODO maybe switch to private afterwards
     private WavStreamHandler audioAnalyser;
                                   // used to analyse mic's input buffer without blocking
                                   // this thread from filling it. ("Producer, Consumer" problem)
@@ -87,7 +89,7 @@ public class MicWavRecorderHandler extends Thread
 
 
     MicWavRecorderHandler( long SAMPLE_RATE_, int CHANNEL_MODE_, int ENCODING_FORMAT_,
-                    MicTestActivity activity_) throws MicWavRecorderHandlerException
+                    MicTestActivity uiActivity_) throws MicWavRecorderHandlerException
     {
 //        if (singletonInstance == null)
 //            singletonInstance = this; // TODO later and better
@@ -98,7 +100,7 @@ public class MicWavRecorderHandler extends Thread
         ENCODING_FORMAT = ENCODING_FORMAT_;
 
         //Microphone Initialization
-        bufferSize = 10*AudioRecord.getMinBufferSize((int)SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
+        bufferSize = BUFFER_SIZE_MULTIPLICATOR*AudioRecord.getMinBufferSize((int)SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
                     // value expressed in bytes
                     // using 10 times the getMinBufferSize to avoid IO operations and reduce a bad "producer / consumer" case's probabilities
         mic = new AudioRecord( MediaRecorder.AudioSource.MIC,
@@ -116,7 +118,7 @@ public class MicWavRecorderHandler extends Thread
         streamBuffer = new short[bufferSize];
 
         // Link current MivWavRecorder's thread to its MicTestActivity's thread
-        activity = activity_;
+        uiActivity = uiActivity_;
 
         // Initialize and start the WavStreamHandler's thread that will detect audio's spikes
         audioAnalyser = new WavStreamHandler(this);

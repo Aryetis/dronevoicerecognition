@@ -160,11 +160,15 @@ commands.add("test5");
 
 
 
-    public void nextCommand()
+    public boolean nextCommand()
     {
         // iterate to the next command to be recorded listed in commands's List
         curCommandListIndex++;
         updateUI();
+        if ( curCommandListIndex >= commands.size() )
+            return false; // if we're going outOfBounds
+        else
+            return true; // we successfully switched to the next Command of the list
     }
 
 
@@ -218,6 +222,10 @@ commands.add("test5");
     }
 
 
+    public String getCurrentCommandName()
+    {
+        return commands.get(curCommandListIndex);
+    }
 
 
     /***************************************************
