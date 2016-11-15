@@ -2,33 +2,45 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    android:layout_width="fill_parent"
-    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:theme="@style/Base.Theme.AppCompat.Light"
-    android:foreground="?android:attr/selectableItemBackground"
-    android:background="?android:selectableItemBackground"
-    android:clickable="true"
-    android:focusable="true"
-    android:padding="16dp">
-
-    <com.dvr.mel.dronevoicerecognition.RoundedLetterView
-        android:id="@+id/rlv_rlv"
-        android:layout_width="wrap_content"
+    android:background="@color/colorAccent"
+    >
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rlv_backgroundColorValue="@color/colorPrimarySoft"
-        app:rlv_titleSize="12dp"
-        app:rlv_titleText=""/>
-    <TextView
-        app:theme="@style/AppTheme"
-        android:id="@+id/rlv_text_view"
-        android:layout_width="fill_parent"
-        android:layout_height="match_parent"
-        android:layout_marginEnd="0dp"
-        android:gravity="center_vertical"
-        android:paddingLeft="16dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:minHeight="?android:attr/listPreferredItemHeight"
-        android:textColor="@color/colorPrimaryDark"
-        android:textAlignment="gravity"
-        />
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:background="?android:selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        >
+        <com.dvr.mel.dronevoicerecognition.RoundedLetterView
+            android:id="@+id/rlv_rlv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:rlv_backgroundColorValue="@color/colorPrimarySoft"
+            app:rlv_titleSize="12dp"
+            app:rlv_titleText=""/>
+        <TextView
+            app:theme="@style/AppTheme"
+            android:id="@+id/rlv_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="0dp"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="0dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:minHeight="?android:attr/listPreferredItemHeight"
+            android:textColor="@color/colorPrimaryDark"
+            android:textAlignment="gravity"
+
+            />
+    </LinearLayout>
 </LinearLayout>

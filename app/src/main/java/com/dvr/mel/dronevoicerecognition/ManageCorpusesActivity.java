@@ -3,6 +3,7 @@ package com.dvr.mel.dronevoicerecognition;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -29,14 +30,17 @@ public class ManageCorpusesActivity extends AppCompatActivity {
 
         // TODO Link with real data
         final ArrayList<String> mockList = new ArrayList<String>();
+        // Layout manager of recycler view
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
 
+        // List adapter of recycler view
         adapter = new RecyclerView.Adapter() {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-                LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-                View view = inflater.inflate(R.layout.base_rounded_letter_view_item_list, null);
+
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.base_rounded_letter_view_item_list, parent, false);
 
                 return new RecyclerView.ViewHolder(view) {
                     @Override
@@ -74,9 +78,23 @@ public class ManageCorpusesActivity extends AppCompatActivity {
             }
         };
 
+        // Get recycler view
         recyclerView = (RecyclerView) findViewById(R.id.corpuses_recyclerview);
+
+
+
+
+        // Add divider decorator
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                layoutManager.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
+
+        // List adapter
         recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+
+        // Add layout Manager
+        recyclerView.setLayoutManager(layoutManager);
+
 
         mockList.add("Corpus de Référence");
         mockList.add("Corpus Matthias");
