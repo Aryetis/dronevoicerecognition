@@ -18,6 +18,8 @@ import java.io.IOException;
 
 /*****************************************
  * TODO List, what to tackle first:
+ *          _ Fix IO failing
+ *
  *          _ Make this class a singleton
  *          _ check private / public variables
  *          _ makes more "safe" thread closing using InteruptEvent
@@ -30,7 +32,7 @@ public class WavStreamHandler extends Thread
 {
     /***************************************************
      *                                                 *
-     *                INNER VARIABLES                  *
+     *                INTERN VARIABLES                 *
      *                                                 *
      ***************************************************/
 
@@ -136,7 +138,7 @@ public class WavStreamHandler extends Thread
                 {   // while streamBufferQueue is empty / nothing to consume =>  wait
                     try { micHandler.lock.wait(); } catch (InterruptedException ie) { ie.printStackTrace();}
                 }
-                // dequeuing streamBuffer from the Queue, immediatly copy it in order to not hold back the "producer"
+                // dequeuing streamBuffer from the Queue, immediately copy it in order to not hold back the "producer"
                 streamBuffer = micHandler.streamBufferQueue.remove();
             }
 
@@ -172,6 +174,9 @@ public class WavStreamHandler extends Thread
             // Switch userSpeaking's state flag
             userSpeaking = true;
 
+            // Update UI
+            toggleUIRecordingStateValue();
+
             // Start recording
             writeStreamBufferToOutputStream();
 
@@ -186,6 +191,9 @@ public class WavStreamHandler extends Thread
             // Switch userSpeaking's state flag
             userSpeaking = false;
 
+            // Update UI
+            toggleUIRecordingStateValue();
+
             // Finish current recording, flush and close outputStream
             try
             {
@@ -197,7 +205,7 @@ public class WavStreamHandler extends Thread
             catch (IOException ie)
             { ie.printStackTrace(); }
 
-            if ( micHandler.uiActivity.nextCommand() )
+            if ( micHandler.uiActivity.nextCommand() ) //TODO check if it works correcty, return a value and such thing
             { // if Activity successfully switched to the next Command to record in the list
               // aka we still have new Files to record
 
@@ -205,13 +213,14 @@ public class WavStreamHandler extends Thread
                 setOutput(micHandler.uiActivity.appFolderName+micHandler.uiActivity.corpusName+"/"+
                           micHandler.uiActivity.getCurrentCommandName()+".wav");
 
+
                 // actualize UI
-                micHandler.uiActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        micHandler.uiActivity.nextCommand();
-                    }
-                });
+//                micHandler.uiActivity.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        micHandler.uiActivity.nextCommand();
+//                    }
+//                });
             }
 
 
@@ -231,7 +240,7 @@ public class WavStreamHandler extends Thread
             return;
         }
 
-        // Detect if ( "User is still NOT talking ")
+        // Detect if ( "User is STILL NOT talking ")
         if ( !userSpeaking )
         {
             // Update silenceBuffer
@@ -276,16 +285,16 @@ public class WavStreamHandler extends Thread
         });
     }
 
-    private void goToNextCommand()
-    {
-        // update UI
-        micHandler.uiActivity.runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            { micHandler.uiActivity.nextCommand(); }
-        });
-    }
+//    private void goToNextCommand()
+//    {
+//        // update UI
+//        micHandler.uiActivity.runOnUiThread(new Runnable()
+//        {
+//            @Override
+//            public void run()
+//            { micHandler.uiActivity.nextCommand(); }
+//        });
+//    }
 
 
 
@@ -304,6 +313,11 @@ public class WavStreamHandler extends Thread
         {
 Log.i("WavStreamHandler", "Setting output file to : "+fileAdress );
             outputFile = new File(fileAdress);
+if (!outputFile.exists())
+{
+    Log.e("WavStreamHandler", "Output File couldn't be created");
+    System.exit(1);
+}
             outputStream = new FileOutputStream(outputFile, false); //overWrite the file if it exists
 
             if (!outputFile.exists())

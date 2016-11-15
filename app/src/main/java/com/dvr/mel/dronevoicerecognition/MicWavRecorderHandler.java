@@ -45,7 +45,7 @@ public class MicWavRecorderHandler extends Thread
 {
     /***************************************************
      *                                                 *
-     *                INNER VARIABLES                  *
+     *                INTERN VARIABLES                 *
      *                                                 *
      ***************************************************/
 
