@@ -1,40 +1,32 @@
 package com.dvr.mel.dronevoicerecognition;
 
+// AudioRecord imports
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.util.Log;
-
-import java.io.File;
-import java.io.FileOutputStream;
+// StreamBuffer Queue imports
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.Queue;
 
 /**************************************************************************************************
  *  MicWavRecorderHandler in a nutshell:                                                          *
  *      _ Initialize a "Microphone Input Stream" using AudioRecord                                *
- *      _ Handle audiAnalysis / relevance and File IO operations to WavStreamHandler
- *      _ notify WavStreamHandler's thread every time the buffer is filled
- *      // TODO actualize this, kinda based on MVC architecture
- *
- *                                                                                                *
+ *      _ fill a Queue of streamBuffer containing Audio stream                                    *
+ *      _ notify WavStreamHandler's thread every time a buffer is filled and queued,              *
+ *        based on "Producer/Consumer" Algorithm                                                  *
+ *      _                                                                                         *
  *                                                                                                *
  * Limitations : don't try to use multiple MicWavRecorders at the same time... Just don't, ok ... *
  *               this class is implementing singleton design pattern anyway, so go crazy...try it *
  *               That wouldn't make sense anyway to grab (and modify) mic input buffer            *
  *               from multiple MicWavRecorder threads anyways,                                    *
- *               and concurrent mic input access is also prohibited                               *
+ *               and concurrent mic input accesses is also prohibited by Android anyways, so ...  *
  *************************************************************************************************/
 
 /*****************************************
  * TODO List, what to tackle first:
- *          _ detectAudioSpike simili function
- *          _ creation and suppression of file
- *          _ recording of audio stream in those file
- *          _ kill WavStreamHandler thread in close()
- *          _ implement more safe barrier , make a List of streamBuffer and list of WavStreamHandler giving them ticket and stuff like that so they
- *          work in the correct order, shouldn't be mandatory considering the size of the buffer and the operation we compute on it
- *          _ chill out
+ *          _ Make this class a singleton
+ *          _ check private / public variables
+ *          _ makes more "safe" thread closing using InteruptEvent
  */
 
 // custom Exception
@@ -73,8 +65,8 @@ public class MicWavRecorderHandler extends Thread
                                   // this thread from filling it. ("Producer, Consumer" problem)
                                   // all Files IO and Audio Analysing are delegated over there
 
-    /**** AudioRecorder and its streamBuffer, streamBufferQueue ****/
-    private AudioRecord mic;
+    /**** Audio associated variables ****/
+    private AudioRecord mic; // "Mic Audio Input" Object
     private short[] streamBuffer; // buffer used to constantly listen to the mic
     public int bufferSize; // size of following buffers
     public Queue<short[]> streamBufferQueue; // streamBuffer filled are pushed onto this Queue, waiting for their treatment
@@ -91,6 +83,7 @@ public class MicWavRecorderHandler extends Thread
      *           CONSTRUCTOR & "DESTRUCTOR"            *
      *                                                 *
      ***************************************************/
+
 
 
     MicWavRecorderHandler( long SAMPLE_RATE_, int CHANNEL_MODE_, int ENCODING_FORMAT_,
@@ -114,7 +107,6 @@ public class MicWavRecorderHandler extends Thread
                 // mic always on, completing a non-circular buffer
                 // use audioAnalyser (WavStreamHandler) to detect if buffer is relevant or not
                 //     <=> if phone is recording silence or not.
-        Log.i("MicWavRecorder", "State"+mic.getState()); // check that AudioRecord has been correctly instantiated
         if ( mic.getState() != AudioRecord.STATE_INITIALIZED ) throw new MicWavRecorderHandlerException("Couldn't instantiate AudioRecord properly");
 
         // Initializing streamBufferQueue
@@ -177,8 +169,6 @@ public class MicWavRecorderHandler extends Thread
             }
         }
     }
-
-
 
 
 }

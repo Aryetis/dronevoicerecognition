@@ -15,51 +15,77 @@ import java.io.IOException;
  *                                                                                                *
  *************************************************************************************************/
 
+/*****************************************
+ * TODO List, what to tackle first:
+ *          _ Make this class a singleton
+ *          _ check private / public variables
+ *          _ makes more "safe" thread closing using InteruptEvent
+ */
+
+
+
 public class WavStreamHandler extends Thread
 {
-    private boolean userSpeaking = false; // boolean describing if user is currently speaking or not (using audioAnalyser)
-    private boolean finishedRecordingCurrentCommand = false;
-    private float SENSITIVITY; // in our usecase<=>4.F;
-                               // Used to detect volume spikes
-                               // trigger "spike detected" flag when the actual
-                               // buffer's average amplitude is [SENSIBILITY] times
-                               // higher than the last one
-                               // => Tweak it, increase it if the recording starts
-                               // "randomly", if its sensitivity is too high.
-                               // TODO : allow user to modify it in some "OptionActivity"
+    /***************************************************
+     *                                                 *
+     *                INNER VARIABLES                  *
+     *                                                 *
+     ***************************************************/
 
+    /**** Singleton and lock insurance ****/
+    //MicWavRecorderHandler singletonInstance; //TODO when got time
+
+    /**** Associated thread ****/
     private MicWavRecorderHandler micHandler;
 
-    private double bufferAvgAmp = 0; // buffer's average amplitude
-    static private short[] streamBuffer; // work on a copy of MicWavRecorderHandler ... just in case
+    /**** Audio associated variables ****/
+    private float SENSITIVITY = 2.F;  // Used to detect when User start/stop talking
+                                      // the switch triggers when
+                                      // ( "currentBuffer's RMS" > "previousBuffer's RMS" * SENSITIVITY )
+                                      // RMS : Average RMS Amplitude value
+                                      // => Tweak it if the recording starts "randomly" or user needs to yell at the mic
+                                      // TODO : allow user to modify it in some "OptionActivity"
+    private double bufferAvgRMSAmp = 0; // buffer's average amplitude
+    int bufferSize; // bufferSize = micHandler.bufferSize;  yes it's redundant but more clear that way
+    static private short[] streamBuffer; // copy of a queued streamBuffer, because we don't want to
+                                         // hold the producer's thread in hostage during our computing process
+                                         // basic "Producer/Consumer" protocol stuff
     static private byte[] byteStreamBuffer; // streamBuffer converted into a byte buffer
-    // doing this because outputStream can only work with byte[]
+                                            // doing this because outputStream can only work with byte[]
     static private short[] silenceBuffer; // "silence measurement" buffer, used to clear recordings
-    // TODO : add clearAudio() function in the future to clear the signal by substracting silence to it
-    private boolean alive = true;
+    // TODO : add clearAudio() function in the future to clear the signal by substracting silence average value, specter analysis
+    private long audioLength=0; // Total length in bytes of the currently recorded PCM Audio's stream TODO: check that it's in bytes
 
-    private long audioLength=0;
-    // Output file and stream variable
-    private File outputFile = null; // outputFile (should be something like
-    // "/DATA/APP/com.dvr.mel.dronevoicerecognition/corpus/[UserName]/[orderName].wav"
+    /**** State machine states variables ****/
+    private boolean userSpeaking = false; // boolean describing if user is currently speaking or not (using audioAnalyser)
+    private boolean finishedRecordingCurrentCommand = false;
+
+    /**** File Output and File stream variables ****/
+    private File outputFile = null; // outputFile (should be something like [AppFolder]/[UserName]/[orderName].wav" )
     private FileOutputStream outputStream ; // stream used to fill the outputFile
 
-    // just some shortcut for more readability (should be pointers and not copy if java is smart enough ....)
-    int bufferSize;  // TODO yes it's useless for the code
-                                            // but it maintains what remains of my mental sanity
-
+    /**** WavStreamHandler's lifespan variable ****/
     private volatile boolean runningState = true;
+
+
+
+    /***************************************************
+     *                                                 *
+     *           CONSTRUCTOR & "DESTRUCTOR"            *
+     *                                                 *
+     ***************************************************/
+
 
 
     WavStreamHandler(MicWavRecorderHandler micHandler_)
     {
-        micHandler = micHandler_;
+        // Note : AudioRecord mic's stream is assumed to be already correctly initialized and recording
 
+        micHandler = micHandler_;
         bufferSize = micHandler.bufferSize;
         streamBuffer = new short[bufferSize];
         silenceBuffer = new short[bufferSize];
         byteStreamBuffer = new byte[bufferSize*2];
-        //TODO check state of mic, no need to start checking if buffer is useful before mic is even turned on
 
 
         // Set output file and stream
@@ -68,6 +94,29 @@ public class WavStreamHandler extends Thread
         // don't waste time and resources waiting for the second recording to start
 
     }
+
+
+
+    public void close()
+    {
+
+        // close FileOutputStream
+        //try { outputStream.close(); } //TODO reenable when File creation is handled correctly
+        //catch (IOException e) { e.printStackTrace(); }
+        // close File
+
+        runningState = false;
+    }
+
+
+
+    /***************************************************
+     *                                                 *
+     *                   RUN LOOP                      *
+     *                                                 *
+     ***************************************************/
+
+
 
     @Override
     public void run()
@@ -86,25 +135,35 @@ public class WavStreamHandler extends Thread
                 streamBuffer = micHandler.streamBufferQueue.remove();
             }
 
-        // Consume the streamBuffer asynchronously
-        consumeBuffer();
+            // Consume the streamBuffer asynchronously
+            computeStreamBuffer();
         }
     }
 
 
+    /***************************************************
+     *                                                 *
+     *          AUDIO STREAM ANALYSIS ROUTINES         *
+     *                                                 *
+     ***************************************************/
 
-    private void consumeBuffer()
+
+    private void computeStreamBuffer()
     {
-        if ( bufferAvgAmp == 0 )
+        // First silence calibration
+        if ( bufferAvgRMSAmp == 0 )
         {   // if we analyse the first streamBuffer passed by the mic
             // just calibrate the silence value
-            bufferAvgAmp = getRMSValue();
+            bufferAvgRMSAmp = getRMSValue();
             return;
         }
 
-        double newBufferAvgAmp = getRMSValue();
-        if ( newBufferAvgAmp > bufferAvgAmp*2 )
-        { // if ( "User starts talking" )
+        // Acquiring current Buffer RMS Average Amplitude
+        double newBufferAvgRMSAmp = getRMSValue();
+
+        // Detect if ( "User starts talking" )
+        if ( newBufferAvgRMSAmp > bufferAvgRMSAmp*SENSITIVITY )
+        {
 // debug, ask for next Command
 try { Thread.sleep(2000); } catch (Exception e) { e.printStackTrace(); }
 // update UI
@@ -114,6 +173,42 @@ public void run() {
     micHandler.activity.nextCommand();
 }
 });
+
+            // update bufferAvgRMSAmp
+            bufferAvgRMSAmp = newBufferAvgRMSAmp;
+            return;
+        }
+
+        // Detect if ( "User stops talking" )
+        if ( newBufferAvgRMSAmp < bufferAvgRMSAmp*SENSITIVITY )
+        {
+
+
+
+            // update bufferAvgRMSAmp
+            bufferAvgRMSAmp = newBufferAvgRMSAmp;
+            return;
+        }
+
+        // Detect if ( "User is still talking ")
+        if ( userSpeaking )
+        {
+
+            // update bufferAvgRMSAmp
+            bufferAvgRMSAmp = newBufferAvgRMSAmp;
+            return;
+        }
+
+        // Detect if ( "User is still NOT talking ")
+        if ( !userSpeaking )
+        {
+
+
+            silenceBuffer = streamBuffer;
+
+            // update bufferAvgRMSAmp
+            bufferAvgRMSAmp = newBufferAvgRMSAmp;
+            return;
         }
 
 
@@ -121,12 +216,6 @@ public void run() {
 
 
 
-    private void setUserSpeakingValue()
-    {
-
-        // if (getRMSValue() OP SENSITIVITY)
-        //    toggle MicWavRecorder.userSpeaking
-    }
 
 
 
@@ -141,31 +230,49 @@ public void run() {
         return Math.sqrt(rmsVal/bufferSize);
     }
 
-    public void close()
+
+
+
+    /***************************************************
+     *                                                 *
+     *            UI UPDATE CALLS ROUTINES             *
+     *                                                 *
+     ***************************************************/
+
+
+    private void toggleUIRecordingStateValue()
     {
+        micHandler.activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            { micHandler.activity.toggleRecordingState() ; }
+        });
+    }
 
-        // close FileOutputStream
-        //try { outputStream.close(); } //TODO reenable when File creation is handled correctly
-        //catch (IOException e) { e.printStackTrace(); }
-        // close File
-
-        //TODO
+    private void goToNextCommand()
+    {
+//        try {
+//            Thread.sleep(2000);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        // update UI
+        micHandler.activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            { micHandler.activity.nextCommand(); }
+        });
     }
 
 
 
-    public void computeStreamBuffer()
-    {
-
-    }
-
-
-
-
-
-
-
-
+    /***************************************************
+     *                                                 *
+     *             OUTPUT FILES ROUTINES               *
+     *                                                 *
+     ***************************************************/
 
 
 

@@ -15,24 +15,24 @@ import java.util.List;
 
 
 
-/************************************************************************************************
- *  MicTestActivity in a nutshell:                                                              *
- *      _ get corpusName and corpusList from Parent Activity's Intent                           *
- *      _ pass corpusName to child Activity's Intent                                            *
- *      _ Use MicWavRecorderHandler (& WavStreamHandler) to record                              *
- *        a list of Wav audio files according to corpusList                                     *
- *                                                                                              *
- *  Sidenotes :                                                                                 *
- *  _ If it helps, see Mic related Activities as MVC designed activities,                       *
- *    with MicTestActivity being the View,                                                      *
- *    MicWavRecorderHandler being a model, the middle-man between UI and IO Files related stuff *
- *    and WavStreamHandler computing the streams (Mic and IO) and sending update signal to      *
- *    the MicTestActivity/View                                                                  *
- *  _ When starting a recording session if it is not done till completion no file will be kept. *
- *    Thus RErecording an already existing corpus will erase it regardless if the user          *
- *    complete the second corpus recording session or not !!!!                                  *
- *                                                                                              *
- ************************************************************************************************/
+/**************************************************************************************************
+ *  MicTestActivity in a nutshell:                                                                *
+ *      _ get corpusName and corpusList from Parent Activity's Intent                             *
+ *      _ pass corpusName to child Activity's Intent                                              *
+ *      _ Use MicWavRecorderHandler (& WavStreamHandler) to record                                *
+ *        a list of Wav audio files according to corpusList                                       *
+ *                                                                                                *
+ *  Sidenotes :                                                                                   *
+ *  _ If it helps, see Mic related Activities as MVC designed activities,                         *
+ *    with MicTestActivity being the View,                                                        *
+ *    MicWavRecorderHandler being a model, the middle-man between UI and IO Files related stuff   *
+ *    and WavStreamHandler computing the streams (Mic and IO) and sending update signal to        *
+ *    the MicTestActivity/View                                                                    *
+ *  _ When starting a recording session if it is not done till completion no file will be kept.   *
+ *    Thus RErecording an already existing corpus will erase it regardless if the user            *
+ *    complete the second corpus recording session or not !!!!                                    *
+ *                                                                                                *
+ **************************************************************************************************/
 
 
 
@@ -47,9 +47,9 @@ public class MicTestActivity extends Activity
 
     // Global variables
 // TODO declare those \/ elsewhere when merging projects
-String corpusName="DEBUG";
-String appFolderName="/DATA/APP/com.dvr.mel.dronevoicerecognition/Corpus/";
-List<String> commands = new ArrayList<>();
+public static String corpusName="DEBUG";
+public static String appFolderName="/DATA/APP/com.dvr.mel.dronevoicerecognition/Corpus/";
+public static List<String> commands = new ArrayList<>();
 // TODO declare those /\ elsewhere when merging projects
 
     // Class variables
@@ -168,10 +168,10 @@ commands.add("test5");
     }
 
 
-    public void setRecordingState(boolean rs)
+    public void toggleRecordingState()
     {
         // Toggle the visibility of the circle progress bar thingy during the recording
-        recordingState = rs;
+        recordingState = !recordingState;
         updateUI();
     }
 
