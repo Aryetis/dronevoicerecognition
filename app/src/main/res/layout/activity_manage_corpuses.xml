@@ -41,6 +41,7 @@
         app:borderWidth="0dp"
         android:scaleType="center"
         app:fabSize="normal"
+        android:onClick="addNewCorpus"
 
         />
 

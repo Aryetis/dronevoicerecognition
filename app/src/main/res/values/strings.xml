@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">dronevoicerecognition</string>
-    <string name="title_activity_manage_corpuses">ManageCorpusesActivity</string>
+    <string name="title_activity_manage_corpuses">Manage Corpuses</string>
 </resources>
