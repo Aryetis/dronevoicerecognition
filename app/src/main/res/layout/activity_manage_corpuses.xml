@@ -13,13 +13,21 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/corpuses_recyclerview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:orientation="vertical"
+            android:visibility="visible"
+            android:drawSelectorOnTop="true" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/user_corpuses_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_margin="0dp"
             android:orientation="vertical"
             android:visibility="visible"
@@ -33,10 +41,10 @@
         android:src="@drawable/ic_plus"
         app:elevation="10dp"
         tools:ignore="RelativeOverlap"
-        android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="26dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         app:backgroundTint="@color/colorRedAccent"
         app:borderWidth="0dp"
         android:scaleType="center"

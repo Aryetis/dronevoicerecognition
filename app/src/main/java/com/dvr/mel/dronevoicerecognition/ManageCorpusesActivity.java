@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,10 +23,15 @@ public class ManageCorpusesActivity extends AppCompatActivity {
 
 
     RecyclerView.Adapter adapter;
-    RecyclerView recyclerView;
+    RecyclerView.Adapter userAdapter;
+    RecyclerView staticCorpusesRecyclerView;
+    RecyclerView userCorpusesRecyclerView;
+    LinearLayoutManager layoutManager;
     Context context = this;
     // TODO Link with real data
-    final ArrayList<String> mockList = new ArrayList<String>();
+    final ArrayList<String> staticMockList = new ArrayList<String>();
+    // TODO Link with real data
+    final ArrayList<String> userMockList = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +40,16 @@ public class ManageCorpusesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manage_corpuses);
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        staticMockList.add("Homme Réference");
+        staticMockList.add("Femme Réference");
+        userMockList.add("Placeholder");
 
+
+       /*
+        * STATIC RECYCLER VIEW LIST
+        * */
         // Layout manager of recycler view
-        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+        layoutManager = new LinearLayoutManager(context);
 
         // List adapter of recycler view
         adapter = new RecyclerView.Adapter() {
@@ -61,7 +72,66 @@ public class ManageCorpusesActivity extends AppCompatActivity {
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
                 final int finalpos = position;
                 ((RoundedLetterView)holder.itemView.findViewById(R.id.rlv_rlv)).setTitleText("C"+position);
-                ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(mockList.get(position));
+                ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(staticMockList.get(position));
+                holder.itemView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+                    @Override
+                    public void onCreateContextMenu(ContextMenu contextMenu, final View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
+
+                        contextMenu.setHeaderTitle("Select an action");
+                        contextMenu.add(0, finalpos, 0, "Set as reference");
+                        ManageCorpusesActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
+                    }
+
+                });
+
+            }
+
+            @Override
+            public int getItemCount() {
+                return staticMockList.size();
+            }
+        };
+
+        // Get recycler view
+        staticCorpusesRecyclerView = (RecyclerView) findViewById(R.id.corpuses_recyclerview);
+
+        // Add divider decorator
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(staticCorpusesRecyclerView.getContext(),
+                layoutManager.getOrientation());
+        staticCorpusesRecyclerView.addItemDecoration(dividerItemDecoration);
+
+        // List adapter
+        staticCorpusesRecyclerView.setAdapter(adapter);
+
+        // Add layout Manager
+        staticCorpusesRecyclerView.setLayoutManager(layoutManager);
+
+        /*
+        * USER RECYCLER VIEW LIST
+        * */
+
+        // List adapter of recycler view
+        userAdapter = new RecyclerView.Adapter() {
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+
+
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.base_rounded_letter_view_item_list, parent, false);
+
+                return new RecyclerView.ViewHolder(view) {
+                    @Override
+                    public String toString() {
+                        return super.toString();
+                    }
+                };
+            }
+
+            @Override
+            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+                final int finalpos = position;
+                ((RoundedLetterView)holder.itemView.findViewById(R.id.rlv_rlv)).setTitleText("C"+position);
+                ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(userMockList.get(position));
                 holder.itemView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
                     @Override
                     public void onCreateContextMenu(ContextMenu contextMenu, final View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
@@ -78,27 +148,23 @@ public class ManageCorpusesActivity extends AppCompatActivity {
 
             @Override
             public int getItemCount() {
-                return mockList.size();
+                return userMockList.size();
             }
         };
 
 
         // Get recycler view
-        recyclerView = (RecyclerView) findViewById(R.id.corpuses_recyclerview);
+        userCorpusesRecyclerView = (RecyclerView) findViewById(R.id.user_corpuses_recyclerview);
 
-
-
-
-        // Add divider decorator
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
-                layoutManager.getOrientation());
-        recyclerView.addItemDecoration(dividerItemDecoration);
+        // Add same divider decorator
+        userCorpusesRecyclerView.addItemDecoration(dividerItemDecoration);
 
         // List adapter
-        recyclerView.setAdapter(adapter);
+        userCorpusesRecyclerView.setAdapter(userAdapter);
 
         // Add layout Manager
-        recyclerView.setLayoutManager(layoutManager);
+        layoutManager = new LinearLayoutManager(context);
+        userCorpusesRecyclerView.setLayoutManager(layoutManager);
 
     }
 
@@ -106,10 +172,11 @@ public class ManageCorpusesActivity extends AppCompatActivity {
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getTitle().toString()){
             case "Remove":
-                mockList.remove(item.getItemId());
-                adapter.notifyDataSetChanged();
+                userMockList.remove(item.getItemId());
+                userAdapter.notifyDataSetChanged();
                 break;
             case "Set as reference":
+                // TODO Set as reference
                 break;
         }
         Toast.makeText(context, "Removed " + item.getItemId(), Toast.LENGTH_SHORT).show();
@@ -131,8 +198,8 @@ public class ManageCorpusesActivity extends AppCompatActivity {
                         (EditText)((AlertDialog)dialog).findViewById(R.id.newCorpusNameEditText);
                 String name = (nameEditText != null ? nameEditText.getText().toString().trim() : "");
                 if (!name.isEmpty()) {
-                    mockList.add(name);
-                    adapter.notifyDataSetChanged();
+                    userMockList.add(name);
+                    userAdapter.notifyDataSetChanged();
                 }
                 else
                     Toast.makeText(context, "The name field is empty!", Toast.LENGTH_SHORT).show();
