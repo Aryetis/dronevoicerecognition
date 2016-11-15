@@ -148,7 +148,7 @@ commands.add("test5");
     {
         // Iterate to the previous command to be recorded in command's list
         // And delete previous recording
-        // TODO : find a way to move this to WavStreamHandler properly, after it is supposed to be the controller
+        // TODO : find a way to move this to WavStreamHandler properly, after all it is supposed to be the controller's job
         // TODO delete existing file record, no leftovers, it's all or nothing
 //        File foo =
 //                if exists

@@ -7,6 +7,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Queue;
 
 /**************************************************************************************************
@@ -56,8 +57,9 @@ public class MicWavRecorderHandler extends Thread
      *                                                 *
      ***************************************************/
 
-    /**** Singleton insurance****/
+    /**** Singleton and lock insurance ****/
     //MicWavRecorderHandler singletonInstance; //TODO when got time
+    public Object lock = new Object(); // shared lock with WavStreamHandler for "producer/consumer" problem resolution
 
     /**** AudioRecord's settings (AUDIO FORMAT SETTINGS) ****/
     private long SAMPLE_RATE; // in our usecase<=>16000, 16KHz // stored in a long cause it's stored as such in a wav header
@@ -65,16 +67,16 @@ public class MicWavRecorderHandler extends Thread
     private int ENCODING_FORMAT; // in our usecase<=>AudioFormat.ENCODING_PCM_16BIT<=>16 bits
 
     /**** Associated threads ****/
-    public MicTestActivity activity; // Activity "linked to"/"which started" this MicWavRecorder
-    private WavStreamHandler audioAnalyser = new WavStreamHandler(this);
+    public MicTestActivity activity; // Activity "linked to"/"which started" this MicWavRecorder //TODO maybe switch to private afterwards
+    private WavStreamHandler audioAnalyser;
                                   // used to analyse mic's input buffer without blocking
                                   // this thread from filling it. ("Producer, Consumer" problem)
                                   // all Files IO and Audio Analysing are delegated over there
 
     /**** AudioRecorder and its streamBuffer, streamBufferQueue ****/
     private AudioRecord mic;
-    public int bufferSize; // size of following buffers
     private short[] streamBuffer; // buffer used to constantly listen to the mic
+    public int bufferSize; // size of following buffers
     public Queue<short[]> streamBufferQueue; // streamBuffer filled are pushed onto this Queue, waiting for their treatment
 
     /**** MicWavRecorder's lifespan variable ****/
@@ -124,7 +126,8 @@ public class MicWavRecorderHandler extends Thread
         // Link current MivWavRecorder's thread to its MicTestActivity's thread
         activity = activity_;
 
-        // Start the WavStreamHandler's thread that will detect audio's spikes
+        // Initialize and start the WavStreamHandler's thread that will detect audio's spikes
+        audioAnalyser = new WavStreamHandler(this);
         audioAnalyser.start();
 
         // Start recording with the mic
@@ -159,24 +162,20 @@ public class MicWavRecorderHandler extends Thread
     @Override
     public void run()
     {
+        // Basic Producer(MicWavRecorderHandler) and Consumer(WavStreamHandler) problem
+
         while(runningState)
         {
-            // update streamBuffer
-            mic.read(streamBuffer, 0, bufferSize); // read() IS A BLOCKING METHOD !!!   
+            // update streamBuffer / produce a streamBuffer
+            mic.read(streamBuffer, 0, bufferSize); // read() IS A BLOCKING METHOD !!!
                                                    // it will wait for the buffer to be filled before returning it
 
-            // add filled streamBuffer to the Queue of buffer to be analysed
-            streamBufferQueue.add(streamBuffer);
-
-            // notify WavStreamHandler that a streamBuffer is ready to be pulled and computed
-            // delegate the analysis of streamBuffer and IO operations on another thread
-            // so buffer can be filled without waiting for its analysis / missing any audioFrames
-            audioAnalyser.notify();
+            synchronized(lock) // CRITICAL SECTION : synchronize on the same lock with Consumer
+            {
+                streamBufferQueue.add(streamBuffer); // add buffer to the Queue shared with Consumer
+                lock.notify(); // notify consumer that a streamBuffer is ready to be consumed
+            }
         }
-
-        // wait for WavStreamHandler to finish computing the streamBuffer of the queue before closing
-        // will be waken up by a WavStreamHandler notification
-        try { this.wait(); } catch (InterruptedException ie) { ie.printStackTrace();}
     }
 
 

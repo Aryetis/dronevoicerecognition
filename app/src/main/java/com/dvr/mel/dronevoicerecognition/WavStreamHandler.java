@@ -8,31 +8,30 @@ import java.io.IOException;
 
 /**************************************************************************************************
  *  MicWavRecorder in a nutshell:                                                                 *
- *      _ handle mic and IO stream
- *      _ determine if relevant or not
- *      _ detect any Amplitude Spike on MicWavRecorder.streamBuffer using RMS method
- *        and change MicWavRecorder
- *       _ Encapsulate mic's PCM audio input in a WAV file (dynamic header creation)               *
-
- *      *
+ *      _ evaluate mic stream, determine if it is relevant or not (silence) using RMS method      *
+ *      _ handle IO stream, create PCM RIFF Wav files (dynamic header creation)                   *
+ *      _ keep track of a silenceBuffer (for future optimized clean up algorithm)                 *
+ *      _ triggers UI update based on mic stream                                                  *
+ *                                                                                                *
  *************************************************************************************************/
 
 public class WavStreamHandler extends Thread
 {
     private boolean userSpeaking = false; // boolean describing if user is currently speaking or not (using audioAnalyser)
-    private boolean finishedRecordingCurrentCommand = false; // TODO
+    private boolean finishedRecordingCurrentCommand = false;
     private float SENSITIVITY; // in our usecase<=>4.F;
-    // Used to detect volume spikes
-    // trigger "spike detected" flag when the actual
-    // buffer's average amplitude is [SENSIBILITY] times
-    // higher than the last one
-    // => Tweak it, increase it if the recording starts
-    // "randomly", if its sensitivity is too high.
+                               // Used to detect volume spikes
+                               // trigger "spike detected" flag when the actual
+                               // buffer's average amplitude is [SENSIBILITY] times
+                               // higher than the last one
+                               // => Tweak it, increase it if the recording starts
+                               // "randomly", if its sensitivity is too high.
+                               // TODO : allow user to modify it in some "OptionActivity"
 
     private MicWavRecorderHandler micHandler;
 
-    private float bufferAvgAmp = 0; // buffer's average amplitude
-    //static private short[] streamBuffer; // work on a copy of MicWavRecorderHandler ... just in case
+    private double bufferAvgAmp = 0; // buffer's average amplitude
+    static private short[] streamBuffer; // work on a copy of MicWavRecorderHandler ... just in case
     static private byte[] byteStreamBuffer; // streamBuffer converted into a byte buffer
     // doing this because outputStream can only work with byte[]
     static private short[] silenceBuffer; // "silence measurement" buffer, used to clear recordings
@@ -46,7 +45,7 @@ public class WavStreamHandler extends Thread
     private FileOutputStream outputStream ; // stream used to fill the outputFile
 
     // just some shortcut for more readability (should be pointers and not copy if java is smart enough ....)
-    int bufferSize = micHandler.bufferSize; // TODO yes it's useless for the code
+    int bufferSize;  // TODO yes it's useless for the code
                                             // but it maintains what remains of my mental sanity
 
     private volatile boolean runningState = true;
@@ -56,6 +55,8 @@ public class WavStreamHandler extends Thread
     {
         micHandler = micHandler_;
 
+        bufferSize = micHandler.bufferSize;
+        streamBuffer = new short[bufferSize];
         silenceBuffer = new short[bufferSize];
         byteStreamBuffer = new byte[bufferSize*2];
         //TODO check state of mic, no need to start checking if buffer is useful before mic is even turned on
@@ -66,24 +67,45 @@ public class WavStreamHandler extends Thread
         // and set the next one at the END OF RECORDING,
         // don't waste time and resources waiting for the second recording to start
 
-
-
-
     }
 
     @Override
     public void run()
     {
+        // Basic Producer(MicWavRecorderHandler) and Consumer(WavStreamHandler) problem
 
         while (runningState)
         {
-            // wait for streamBuffer to be filled, don't work on half baked streamBuffer
-            // thread waken up by MicWavRecorderHandler's run loop with notify()
-            try { this.wait(); } catch (InterruptedException ie) { ie.printStackTrace();}
+            synchronized (micHandler.lock) // CRITICAL SECTION : synchronize on the same lock with Producer
+            {
+                while (micHandler.streamBufferQueue.peek() == null)
+                {   // while streamBufferQueue is empty / nothing to consume =>  wait
+                    try { micHandler.lock.wait(); } catch (InterruptedException ie) { ie.printStackTrace();}
+                }
+                // dequeuing streamBuffer from the Queue, immediatly copy it in order to not hold back the "producer"
+                streamBuffer = micHandler.streamBufferQueue.remove();
+            }
 
-            // pull streamBuffer from queue and work on it
+        // Consume the streamBuffer asynchronously
+        consumeBuffer();
+        }
+    }
 
 
+
+    private void consumeBuffer()
+    {
+        if ( bufferAvgAmp == 0 )
+        {   // if we analyse the first streamBuffer passed by the mic
+            // just calibrate the silence value
+            bufferAvgAmp = getRMSValue();
+            return;
+        }
+
+        double newBufferAvgAmp = getRMSValue();
+        if ( newBufferAvgAmp > bufferAvgAmp*2 )
+        { // if ( "User starts talking" )
+// debug, ask for next Command
 try { Thread.sleep(2000); } catch (Exception e) { e.printStackTrace(); }
 // update UI
 micHandler.activity.runOnUiThread(new Runnable() {
@@ -92,46 +114,11 @@ public void run() {
     micHandler.activity.nextCommand();
 }
 });
-
-
-
         }
 
 
-
-
-
-
-
-
-
-
-
-        // while (volatile bool)
-        // wait for notification
-        // copy streamBuffer
-        // if ( bufferIsRelevant )
-        // // DO STUFF
-        //
-
-
-        // Eventually request for next command to evaluate (or be killed by MicTestActivity)
-        // TODO move this part to the WavStreamHandler thread to loose ZERO time between each streamBuffer update
-        // TODO SECOND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//        if ( finishedRecordingCurrentCommand )
-//        {   //request next Command .... must go throught runOnUiThread because
-//            // even with activity being MicTestActivity (aka the UI)
-//            // android traces back the call from a "non UI" context and refuses to access Views
-//            activity.runOnUiThread(new Runnable()
-//            {
-//                @Override
-//                public void run() {
-//                    activity.nextCommand();
-//                }
-//            });
-//            finishedRecordingCurrentCommand = false;
-//        }
     }
+
 
 
     private void setUserSpeakingValue()
@@ -146,16 +133,12 @@ public void run() {
     private double getRMSValue()
     {
         // return RMS value of streamBuffer
-//        double rmsVal=0.F;
-//
-//        for( short s : micHandler.streamBuffer )
-//        {
-//            rmsVal+=s*s;
-//        }
-//
-//        return Math.sqrt(rmsVal/bufferSize);
+        double rmsVal=0.F;
 
-        return 0.f;
+        for( short s : streamBuffer )
+            rmsVal+=s*s;
+
+        return Math.sqrt(rmsVal/bufferSize);
     }
 
     public void close()
