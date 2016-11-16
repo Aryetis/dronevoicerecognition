@@ -48,7 +48,7 @@ public class MicTestActivity extends Activity
     // Global variables
 // TODO declare those \/ elsewhere when merging projects
 public static String corpusName="DEBUG";
-public static String appFolderName="/DATA/APP/com.dvr.mel.dronevoicerecognition/Corpus/";
+public static String appFolderName="/data/data/com.dvr.mel.dronevoicerecognition/Corpus/";
 public static List<String> commands = new ArrayList<>();
 // TODO declare those /\ elsewhere when merging projects
 
@@ -160,15 +160,11 @@ commands.add("test5");
 
 
 
-    public boolean nextCommand()
+    public void nextCommand()
     {
         // iterate to the next command to be recorded listed in commands's List
         curCommandListIndex++;
         updateUI();
-        if ( curCommandListIndex >= commands.size() )
-            return false; // if we're going outOfBounds
-        else
-            return true; // we successfully switched to the next Command of the list
     }
 
 
@@ -224,7 +220,10 @@ commands.add("test5");
 
     public String getCurrentCommandName()
     {
-        return commands.get(curCommandListIndex);
+        if ( curCommandListIndex >= commands.size() )
+            return null; // return null if going OOB
+        else
+            return commands.get(curCommandListIndex);
     }
 
 

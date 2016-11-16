@@ -1,8 +1,11 @@
 package com.dvr.mel.dronevoicerecognition;
 
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.media.AudioFormat;
 import android.util.Log;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -54,19 +57,23 @@ public class WavStreamHandler extends Thread
     static private short[] streamBuffer; // copy of a queued streamBuffer, because we don't want to
                                          // hold the producer's thread in hostage during our computing process
                                          // basic "Producer/Consumer" protocol stuff
-    static private byte[] byteStreamBuffer; // streamBuffer converted into a byte buffer
-                                            // doing this because outputStream can only work with byte[]
+//    static private byte[] byteStreamBuffer; // streamBuffer converted into a byte buffer
+//                                            // doing this because outputStream can only work with byte[]
     static private short[] silenceBuffer; // "silence measurement" buffer, used to clear recordings
     // TODO : add clearAudio() function in the future to clear the signal by substracting silence average value, specter analysis
-    private long audioLength=0; // Total length in bytes of the currently recorded PCM Audio's stream TODO: check that it's in bytes
+    private long audioLength; // Total length in bytes of the currently recorded PCM Audio's stream TODO: check that it's in bytes
+                              // TODO, keep track of audioLength
 
     /**** State machine states variables ****/
     private boolean userSpeaking = false; // boolean describing if user is currently speaking or not (using audioAnalyser)
     private boolean finishedRecordingCurrentCommand = false;
 
     /**** File Output and File stream variables ****/
-    private File outputFile; // outputFile (should be something like [AppFolder]/[UserName]/[orderName].wav" )
-    private FileOutputStream outputStream ; // stream used to fill the outputFile
+    private File corpusDir; // corpus's specific directory ( should be something like [corpusGlobalDir]/corpusName/ )
+    private File commandFile; // outputFile's path ( should be something like [corpusDir]/[orderName].wav" )
+    private FileOutputStream fos ; // stream used to fill the outputFile
+    private DataOutputStream dos; // middle-man stream between a short[] and a File
+                                  // because there is no direct way to write a short[] to a File .... Thanks Java
 
     /**** WavStreamHandler's lifespan variable ****/
     private volatile boolean runningState = true;
@@ -95,20 +102,34 @@ public class WavStreamHandler extends Thread
         bufferSize = micHandler.bufferSize;
         streamBuffer = new short[bufferSize];
         silenceBuffer = new short[bufferSize];
-        byteStreamBuffer = new byte[bufferSize*2];
+//        byteStreamBuffer = new byte[bufferSize*2];
+
+// TODO DEBUG \/ to be removed and use Global Variables after merging
+// get Application's Context
+ContextWrapper cw = new ContextWrapper(this.micHandler.uiActivity.getApplicationContext());
+// get Application's data subfolder directory
+File baseDir = cw.getDir("data", Context.MODE_PRIVATE);
+// create Global Corpus subdirectory
+File corpusGlobalDir = new File(baseDir, "Corpus");
+if ( !corpusGlobalDir.exists())
+   corpusGlobalDir.mkdir();
 
 
         // Set output file and stream
-        setOutput(micHandler.uiActivity.appFolderName+micHandler.uiActivity.corpusName+"/"+
-                micHandler.uiActivity.getCurrentCommandName()+".wav");
+        // create specific corpus's subdirectory
+        corpusDir = new File(corpusGlobalDir, micHandler.uiActivity.corpusName);
+        if ( !corpusDir.exists())
+            corpusDir.mkdir();
+        // Create command's file
+        setOutput( micHandler.uiActivity.getCurrentCommandName()+".wav" );
     }
 
 
 
     public void close()
     {
-        // close FileOutputStream
-        try { outputStream.close(); }
+        // close FileOutputStream and DataOutputStream
+        try { dos.close(); fos.close();}
         catch (IOException e) { e.printStackTrace(); }
 
         // stop the run loop / thread
@@ -157,7 +178,7 @@ public class WavStreamHandler extends Thread
 
     private void computeStreamBuffer()
     {
-        // First silence calibration
+        /**** First silence calibration ****/
         if ( bufferAvgRMSAmp == 0 )
         {   // if we analyse the first streamBuffer passed by the mic
             // just calibrate the silence value
@@ -168,79 +189,79 @@ public class WavStreamHandler extends Thread
         // Acquiring current Buffer RMS Average Amplitude
         double newBufferAvgRMSAmp = getRMSValue();
 
-        // Detect if ( "User starts talking" )
+        /**** Detect if ( "User starts talking" ) ****/
         if ( newBufferAvgRMSAmp > bufferAvgRMSAmp*SENSITIVITY )
         {
             // Switch userSpeaking's state flag
             userSpeaking = true;
 
-            // Update UI
+            // Update UI (toggle progress bar circle thingy)
             toggleUIRecordingStateValue();
 
             // Start recording
-            writeStreamBufferToOutputStream();
+            writeStreamBuffer();
 
             // update bufferAvgRMSAmp
             bufferAvgRMSAmp = newBufferAvgRMSAmp;
             return;
         }
 
-        // Detect if ( "User stops talking" )
+        /**** Detect if ( "User stops talking" ) ****/
         if ( newBufferAvgRMSAmp < bufferAvgRMSAmp*SENSITIVITY )
         {
             // Switch userSpeaking's state flag
             userSpeaking = false;
 
-            // Update UI
+            // Update UI (toggle progress bar circle thingy)
             toggleUIRecordingStateValue();
 
             // Finish current recording, flush and close outputStream
             try
             {
-                writeStreamBufferToOutputStream();
-                outputStream.flush();
+                writeStreamBuffer();
                 writeWavHeader(); // Complete file's Wav header
-                outputStream.close();
+                fos.close();
             }
             catch (IOException ie)
             { ie.printStackTrace(); }
 
-            if ( micHandler.uiActivity.nextCommand() ) //TODO check if it works correcty, return a value and such thing
+            String foo = micHandler.uiActivity.getCurrentCommandName();
+            if ( foo == null ) // getCurrentCommandName() returns null if going OOB / reaching the end of the List
+                close(); // end of the commandList reached => close everything and move on, the job is done ! Congrats !
+            else
             { // if Activity successfully switched to the next Command to record in the list
               // aka we still have new Files to record
 
                 // set next outputFile
-                setOutput(micHandler.uiActivity.appFolderName+micHandler.uiActivity.corpusName+"/"+
-                          micHandler.uiActivity.getCurrentCommandName()+".wav");
+                setOutput( micHandler.uiActivity.getCurrentCommandName()+".wav" );
 
 
                 // actualize UI
-//                micHandler.uiActivity.runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        micHandler.uiActivity.nextCommand();
-//                    }
-//                });
+                micHandler.uiActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        micHandler.uiActivity.nextCommand();
+                    }
+                });
             }
-
 
             // update bufferAvgRMSAmp
             bufferAvgRMSAmp = newBufferAvgRMSAmp;
             return;
         }
 
-        // Detect if ( "User is still talking ")
+        /**** Detect if ( "User is still talking ") ****/
         if ( userSpeaking )
         {
             // Continue recording
-            writeStreamBufferToOutputStream();
+            writeStreamBuffer();
 
             // update bufferAvgRMSAmp
             bufferAvgRMSAmp = newBufferAvgRMSAmp;
             return;
         }
 
-        // Detect if ( "User is STILL NOT talking ")
+        /**** Detect if ( "User is STILL NOT talking ") ****/
         if ( !userSpeaking )
         {
             // Update silenceBuffer
@@ -285,17 +306,6 @@ public class WavStreamHandler extends Thread
         });
     }
 
-//    private void goToNextCommand()
-//    {
-//        // update UI
-//        micHandler.uiActivity.runOnUiThread(new Runnable()
-//        {
-//            @Override
-//            public void run()
-//            { micHandler.uiActivity.nextCommand(); }
-//        });
-//    }
-
 
 
     /***************************************************
@@ -306,27 +316,27 @@ public class WavStreamHandler extends Thread
 
 
 
-    void setOutput(String fileAdress)
+    void setOutput(String commandName)
     {
         // Set the output file of the Audio stream
         try
         {
-Log.i("WavStreamHandler", "Setting output file to : "+fileAdress );
-            outputFile = new File(fileAdress);
-if (!outputFile.exists())
-{
-    Log.e("WavStreamHandler", "Output File couldn't be created");
-    System.exit(1);
-}
-            outputStream = new FileOutputStream(outputFile, false); //overWrite the file if it exists
+            // create command's File
+            File commandFile = new File(corpusDir, micHandler.uiActivity.getCurrentCommandName()+".wav");
+            if ( !commandFile.exists() )
+                commandFile.createNewFile();
+            if ( !commandFile.exists() )
+                Log.e("WavStreamHandler", "Couldn't create file : "+corpusDir+"/"+micHandler.uiActivity.getCurrentCommandName()+".wav" );
 
-            if (!outputFile.exists())
-                outputFile.createNewFile();
+            // create FileOutputStream
+            fos = new FileOutputStream(commandFile, false); //overWrite the file if it exists
+            // create DataOutputStream
+            dos = new DataOutputStream(fos);
 
             // write DUMMY Wav header, will be completed after the recording cause we need to know
             // PCM Audio's Length before writing it
             byte[] header = new byte[44];
-            outputStream.write(header, 0, 44);
+            fos.write(header, 0, 44);
         }
         catch (IOException e)
         { e.printStackTrace(); }
@@ -334,27 +344,43 @@ if (!outputFile.exists())
 
 
 
-    private void writeStreamBufferToOutputStream()
-    {    // convert the streamBuffer short array into a byte array
-        // and write it into outputStream
-        int curShortIndex = 0, curByteIndex = 0;
-        int iterations = micHandler.bufferSize;
-
-        // iterate over the short Array, for each iteration create and insert two bytes
-        for(; curShortIndex != iterations ;)
-        {
-            byteStreamBuffer[curByteIndex] = (byte) (streamBuffer[curShortIndex] & 0x00ff);
-            byteStreamBuffer[curByteIndex+1] = (byte) ((streamBuffer[curShortIndex] & 0x00ff) >> 8);
-
-            ++curShortIndex; curByteIndex += 2;
-        }
-
-        // Write byteStreamBuffer ( should be identical to streamBuffer ) into outputStream
+    public void writeStreamBuffer()
+    {
         try
-        { outputStream.write(byteStreamBuffer); }
-        catch (IOException e)
-        { e.printStackTrace(); }
+        {
+            for (short s : streamBuffer)
+                dos.writeShort(s);
+            dos.flush(); // TODO not sure if that's necessary, close() should be called at the end and thus also flush()
+        } catch (IOException ie) { ie.printStackTrace(); }
+
+
     }
+
+
+
+
+
+//    private void writeStreamBufferToOutputStream()
+//    {    // convert the streamBuffer short array into a byte array
+//        // and write it into outputStream
+//        int curShortIndex = 0, curByteIndex = 0;
+//        int iterations = micHandler.bufferSize;
+//
+//        // iterate over the short Array, for each iteration create and insert two bytes
+//        for(; curShortIndex != iterations ;)
+//        {
+//            byteStreamBuffer[curByteIndex] = (byte) (streamBuffer[curShortIndex] & 0x00ff);
+//            byteStreamBuffer[curByteIndex+1] = (byte) ((streamBuffer[curShortIndex] & 0x00ff) >> 8);
+//
+//            ++curShortIndex; curByteIndex += 2;
+//        }
+//
+//        // Write byteStreamBuffer ( should be identical to streamBuffer ) into outputStream
+//        try
+//        { outputStream.write(byteStreamBuffer); }
+//        catch (IOException e)
+//        { e.printStackTrace(); }
+//    }
 
 
 
@@ -406,7 +432,7 @@ if (!outputFile.exists())
         header[42]=(byte) ((audioLength >> 16) & 0xff); header[43]=(byte) ((audioLength >> 24) & 0xff); // Actual Audio Data (PCM) length
 
         // Write completed header
-        try { outputStream.write(header, 0, 44); }
+        try { fos.write(header, 0, 44); }
         catch (IOException e) { e.printStackTrace(); }
     }
 
