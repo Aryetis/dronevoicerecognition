@@ -11,9 +11,12 @@ class Corpus {
     private String mDescription;
     private boolean mReference = false;
     private boolean mHasDescription = false;
+    private String mPath;
 
 
-    public Corpus(String name, String description){
+    public Corpus(String name, String description, String path){
+        this.mPath = path;
+        if (mPath.isEmpty()) throw new IllegalArgumentException("Path argument is empty. ");
         this.mName = name;
         this.mDescription = description;
         mHasDescription = !mDescription.isEmpty();
@@ -31,6 +34,8 @@ class Corpus {
     public String getName() {
         return mName;
     }
+
+    public String getPath() { return mPath; }
 
     public String getDescription() {
         return mDescription;
