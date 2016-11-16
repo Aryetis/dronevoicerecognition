@@ -224,7 +224,6 @@ Log.i("WavStreamHandler", "User stops talking");
             // Finish current recording, flush and close outputStream
             try
             {
-Log.i("COUCOU","Tu veux voir ma bite");
                 writeStreamBuffer();
                 writeWavHeader(); // Complete file's Wav header
                 fos.close();
@@ -371,32 +370,6 @@ Log.i("WavStreamHandler", "User is STILL NOT talking");
 
 
 
-
-
-//    private void writeStreamBufferToOutputStream()
-//    {    // convert the streamBuffer short array into a byte array
-//        // and write it into outputStream
-//        int curShortIndex = 0, curByteIndex = 0;
-//        int iterations = micHandler.bufferSize;
-//
-//        // iterate over the short Array, for each iteration create and insert two bytes
-//        for(; curShortIndex != iterations ;)
-//        {
-//            byteStreamBuffer[curByteIndex] = (byte) (streamBuffer[curShortIndex] & 0x00ff);
-//            byteStreamBuffer[curByteIndex+1] = (byte) ((streamBuffer[curShortIndex] & 0x00ff) >> 8);
-//
-//            ++curShortIndex; curByteIndex += 2;
-//        }
-//
-//        // Write byteStreamBuffer ( should be identical to streamBuffer ) into outputStream
-//        try
-//        { outputStream.write(byteStreamBuffer); }
-//        catch (IOException e)
-//        { e.printStackTrace(); }
-//    }
-
-
-
     private void writeWavHeader()
     {   // Write WAV header into outputStream according to "USER DETERMINED VARIABLES"
         // refers to : http://soundfile.sapp.org/doc/WaveFormat/ for more information on WAV header
@@ -444,14 +417,6 @@ Log.i("WavStreamHandler", "User is STILL NOT talking");
         header[40]=(byte) (audioLength & 0xff); header[41]=(byte) ((audioLength >> 8) & 0xff);
         header[42]=(byte) ((audioLength >> 16) & 0xff); header[43]=(byte) ((audioLength >> 24) & 0xff); // Actual Audio Data (PCM) length
 
-
-String decodedDataUsingUTF8;
-try {
-    decodedDataUsingUTF8 = new String(header, "UTF-8");  // Best way to decode using "UTF-8"
-    Log.i("PRINTING HEADER WESH", ("Text Decryted using UTF-8 : " + decodedDataUsingUTF8));
-} catch (Exception e) {
-    e.printStackTrace();
-}
 
     // Write completed header using randomAccess
     try {
