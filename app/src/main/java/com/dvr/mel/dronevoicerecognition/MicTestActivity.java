@@ -2,6 +2,8 @@ package com.dvr.mel.dronevoicerecognition;
 
 // UI imports
 import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.media.AudioFormat;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +12,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 // Corpus management imports
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +37,10 @@ import java.util.List;
  *                                                                                                *
  **************************************************************************************************/
 
-
+/*****************************************
+ * TODO List, what to tackle first:
+ *
+ */
 
 
 public class MicTestActivity extends Activity
@@ -125,6 +131,33 @@ commands.add("test5");
         updateUI();
     }
 
+    @Override
+    protected void onDestroy()
+    {
+// TODO DEBUG \/ to be removed and use Global Variables after merging
+// get Application's Context
+ContextWrapper cw = new ContextWrapper(this.getApplicationContext());
+// get Application's data subfolder directory
+File baseDir = cw.getDir("data", Context.MODE_PRIVATE);
+// create Global Corpus subdirectory
+File corpusGlobalDir = new File(baseDir, "Corpus");
+if ( !corpusGlobalDir.exists())
+corpusGlobalDir.mkdir();
+
+        // check if the recording sessions has been completed, otherwise we delete all related files and directory
+        if ( curCommandListIndex <= commands.size() )
+        {
+            // get corpus's specific directory
+            File corpusDir = new File(corpusGlobalDir, corpusName);
+
+            // delete its internal files ( *.wav )
+            String[] commandFiles = corpusDir.list();
+            for (String cf : commandFiles)
+                new File(corpusDir, cf).delete();
+        }
+    }
+
+
 
 
     /***************************************************
@@ -138,13 +171,6 @@ commands.add("test5");
     private void previousCommand()
     {
         // Iterate to the previous command to be recorded in command's list
-        // And delete previous recording
-        // TODO : find a way to move this to WavStreamHandler properly, after all it is supposed to be the controller's job
-        // TODO delete existing file record, no leftovers, it's all or nothing
-//        File foo =
-//                if exists
-//                    delete
-        // TODO if curCommListIndexIndex <= 0, delete corpus's folder
         curCommandListIndex--;
         updateUI();
     }
