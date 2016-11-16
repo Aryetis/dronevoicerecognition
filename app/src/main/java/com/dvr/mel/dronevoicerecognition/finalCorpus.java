@@ -17,10 +17,12 @@ public class finalCorpus extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_final_corpus);
 
+
         // get all the parameters
         Bundle b = getIntent().getExtras();
         String corpusName = b.getString("corpusName");
         //String corpusName = stringFromJNI();
+
 
         // change the first textView
         String textForLabel = "corpus " + corpusName + " enregistré";
@@ -42,6 +44,7 @@ public class finalCorpus extends AppCompatActivity {
             float percent = computeRecognitionRatio(CorpusInfo.corpusGlobalDir.getAbsolutePath(), "M01", "M02");
             middleLabel.setText(Float.toString(percent));
         }
+
     }
 
     public void updateProgressLabel(String newText) {
