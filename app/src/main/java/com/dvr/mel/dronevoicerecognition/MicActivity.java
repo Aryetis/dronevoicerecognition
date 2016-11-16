@@ -144,18 +144,19 @@ if ( !corpusGlobalDir.exists())
     return;
 
         // check if the recording sessions has been completed, otherwise we delete all related files and directory
-//        if ( curCommandListIndex < commands.size() )
-//        {
-//            // get corpus's specific directory
-//            File corpusDir = new File(corpusGlobalDir, corpusName);
-//
-//            // delete its internal files ( *.wav )
-//            String[] commandFiles = corpusDir.list();
-//            for (String cf : commandFiles)
-//                new File(corpusDir, cf).delete();
-//
-//            corpusDir.delete();
-//        }
+        if ( curCommandListIndex < commands.size() ) // goToNextActivity() triggers when curCommandListIndex == commands.size()
+        {
+            // get corpus's specific directory
+            File corpusDir = new File(corpusGlobalDir, corpusName);
+
+
+            // delete its internal files ( *.wav )
+            String[] commandFiles = corpusDir.list();
+            for (String cf : commandFiles)
+                new File(corpusDir, cf).delete();
+
+            corpusDir.delete();
+        }
 
         // close (and kill threads) MicWavRecorderHandler and its subsidiary WavStreamHandler
         mic.close();
@@ -263,6 +264,7 @@ if ( !corpusGlobalDir.exists())
         mic.close();
 //TODO  \/ to replace with correct Load()
 Log.i("MicActivity", "goToPreviousActivity");
+onDestroy();
 System.exit(0);
     }
 
@@ -275,6 +277,7 @@ System.exit(0);
 //TODO  \/ to replace with correct Load()
 Log.i("MicActivity", "goToNextActivity");
 try { Thread.sleep(2000); } catch (InterruptedException e) {e.printStackTrace(); }
+onDestroy();
 System.exit(0);
     }
 
