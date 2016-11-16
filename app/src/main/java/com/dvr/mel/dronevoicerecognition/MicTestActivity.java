@@ -61,7 +61,6 @@ public static List<String> commands = new ArrayList<>();
     TextView tv; // Display the currently recording command
     ProgressBar talkingIndicator; // Circle Display bar, indicate when the app is recording
     Button back_btn; // Allow the user to go back to previous recording/Activity
-Button debug_btn; // DEBUG : used to force validation of the current command
 
 
 
@@ -91,14 +90,6 @@ Button debug_btn; // DEBUG : used to force validation of the current command
                 previousCommand();
             }
         });
-debug_btn = (Button) findViewById(R.id.debug_button); // Initializing UI accessor
-debug_btn.setOnClickListener(new View.OnClickListener() // Setting OnClickListener
-{
-    public void onClick(View v)
-    {
-        nextCommand();
-    }
-});
         /*********************************************************/
 
 

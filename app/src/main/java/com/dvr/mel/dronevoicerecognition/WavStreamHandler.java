@@ -21,7 +21,10 @@ import java.io.IOException;
 
 /*****************************************
  * TODO List, what to tackle first:
- *          _ Fix IO failing
+ *
+ *          URGENT STUFF !!!!!
+ *          _ fix corrupted wav ?
+ *
  *
  *          _ Make this class a singleton
  *          _ check private / public variables
@@ -46,13 +49,13 @@ public class WavStreamHandler extends Thread
     private MicWavRecorderHandler micHandler;
 
     /**** Audio associated variables ****/
-    private float SENSITIVITY = 2.F;  // (Empirical value) Used to detect when User start/stop talking
+    private float SENSITIVITY = 20.F;  // (Empirical value) Used to detect when User start/stop talking
                                       // the switch triggers when
                                       // ( "currentBuffer's RMS" > "previousBuffer's RMS" * SENSITIVITY )
                                       // RMS : Average RMS Amplitude value
                                       // => Tweak it if the recording starts "randomly" or user needs to yell at the mic
                                       // TODO : allow user to modify it in some "OptionActivity"
-    private double bufferAvgRMSAmp = 0; // buffer's average amplitude
+    private double bufferAvgRMSAmp = 0; // silence's average amplitude
     int bufferSize; // bufferSize = micHandler.bufferSize;  yes it's redundant but more clear that way
     static private short[] streamBuffer; // copy of a queued streamBuffer, because we don't want to
                                          // hold the producer's thread in hostage during our computing process
@@ -66,7 +69,6 @@ public class WavStreamHandler extends Thread
 
     /**** State machine states variables ****/
     private boolean userSpeaking = false; // boolean describing if user is currently speaking or not (using audioAnalyser)
-    private boolean finishedRecordingCurrentCommand = false;
 
     /**** File Output and File stream variables ****/
     private File corpusDir; // corpus's specific directory ( should be something like [corpusGlobalDir]/corpusName/ )
@@ -190,8 +192,9 @@ if ( !corpusGlobalDir.exists())
         double newBufferAvgRMSAmp = getRMSValue();
 
         /**** Detect if ( "User starts talking" ) ****/
-        if ( newBufferAvgRMSAmp > bufferAvgRMSAmp*SENSITIVITY )
-        {
+        if ( newBufferAvgRMSAmp > bufferAvgRMSAmp*SENSITIVITY && !userSpeaking )
+        { //TODO FIX THIS !!! the user has to talk louder, and louder AND LOUDER because the avg is updated
+Log.i("WavStreamHandler", "User starts talking");
             // Switch userSpeaking's state flag
             userSpeaking = true;
 
@@ -201,14 +204,13 @@ if ( !corpusGlobalDir.exists())
             // Start recording
             writeStreamBuffer();
 
-            // update bufferAvgRMSAmp
-            bufferAvgRMSAmp = newBufferAvgRMSAmp;
             return;
         }
 
         /**** Detect if ( "User stops talking" ) ****/
-        if ( newBufferAvgRMSAmp < bufferAvgRMSAmp*SENSITIVITY )
+        if ( newBufferAvgRMSAmp < bufferAvgRMSAmp*SENSITIVITY && userSpeaking )
         {
+Log.i("WavStreamHandler", "User stops talking");
             // Switch userSpeaking's state flag
             userSpeaking = false;
 
@@ -225,6 +227,8 @@ if ( !corpusGlobalDir.exists())
             catch (IOException ie)
             { ie.printStackTrace(); }
 
+
+            //TODO FIX THIS \/ c'est dans le désordre tout ca, et en plus tu rentres dedans sans raisons
             String foo = micHandler.uiActivity.getCurrentCommandName();
             if ( foo == null ) // getCurrentCommandName() returns null if going OOB / reaching the end of the List
                 close(); // end of the commandList reached => close everything and move on, the job is done ! Congrats !
@@ -253,17 +257,17 @@ if ( !corpusGlobalDir.exists())
         /**** Detect if ( "User is still talking ") ****/
         if ( userSpeaking )
         {
+Log.i("WavStreamHandler", "User is still talking");
             // Continue recording
             writeStreamBuffer();
 
-            // update bufferAvgRMSAmp
-            bufferAvgRMSAmp = newBufferAvgRMSAmp;
             return;
         }
 
         /**** Detect if ( "User is STILL NOT talking ") ****/
         if ( !userSpeaking )
         {
+Log.i("WavStreamHandler", "User is STILL NOT talking");
             // Update silenceBuffer
             silenceBuffer = streamBuffer;
 
@@ -345,11 +349,15 @@ if ( !corpusGlobalDir.exists())
 
 
     public void writeStreamBuffer()
-    {
+    {   // write the current short[] buffer into the file going through a DataOutputStream
+        // thus there is no need to convert those short into bytes manually
         try
         {
             for (short s : streamBuffer)
+            {
                 dos.writeShort(s);
+                audioLength += bufferSize*2; // we insert "bufferSize ammount of short" <=> "2*bufferSize bytes"
+            }
             dos.flush(); // TODO not sure if that's necessary, close() should be called at the end and thus also flush()
         } catch (IOException ie) { ie.printStackTrace(); }
 

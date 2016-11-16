@@ -10,14 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.dvr.mel.dronevoicerecognition.MicTestActivity">
 
-    <Button
-        android:text="(debug) Next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/debug_button"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true" />
-
     <TextView
         android:text="initialText"
         android:layout_width="match_parent"
