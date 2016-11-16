@@ -23,45 +23,14 @@
 
 #include "reconnaissanceVocale.h"
 #include "dtw.h"
+#include "matrix.h"
+#include "libmfccOptim.h"
+#include "WavToMfcc.h"
 
 
 
 #define LOGI(...) \
   ((void)__android_log_print(ANDROID_LOG_INFO, "hell-libs::", __VA_ARGS__))
-
-/* This is a trivial JNI example where we use a native method
- * to return a new VM String. See the corresponding Java source
- * file located at:
- *
- *   app/src/main/java/com/example/hellolibs/MainActivity.java
- */
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_dvr_mel_dronevoicerecognition_finalCorpus_stringFromJNI(JNIEnv *env, jobject thiz) {
-
-    std::string toPrint = "ceci est un test";
-    return env->NewStringUTF(toPrint.c_str());
-}
-
-
-
-
-
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_dvr_mel_dronevoicerecognition_finalCorpus_reconnaissance(JNIEnv *env, jobject thiz,
-    jstring reference, jstring hypothese, jstring unkword) {
-
-    const char *c_reference = env->GetStringUTFChars(reference, 0);
-    const char *c_hypothese = env->GetStringUTFChars(hypothese, 0);
-    const char *c_unkword = env->GetStringUTFChars(unkword, 0);
-
-    std::string ref = c_reference;
-    std::string hyp = c_hypothese;
-    std::string unkw = c_unkword;
-
-    std::string toPrint = reconnaissance(ref, hyp, unkw);
-    return env->NewStringUTF(toPrint.c_str());
-}
 
 
 
@@ -70,36 +39,53 @@ Java_com_dvr_mel_dronevoicerecognition_finalCorpus_reconnaissance(JNIEnv *env, j
 
 
 extern "C" JNIEXPORT jfloat JNICALL
-Java_com_dvr_mel_dronevoicerecognition_finalCorpus_computeRecognitionRatio(JNIEnv *env, jobject thiz,
-                                                                  jstring reference, jstring hypothese) {
+Java_com_dvr_mel_dronevoicerecognition_finalCorpus_computeRecognitionRatio(
+        JNIEnv *env, jobject obj, jstring pathToSDCard,
+        jstring reference, jstring hypothese) {
 
-    // converstion des parametre pour être exploitable par les fonction C++
+    // convert all parameters to be usable by C++ functions
     const char *c_reference = env->GetStringUTFChars(reference, 0);
     const char *c_hypothese = env->GetStringUTFChars(hypothese, 0);
+    const char *c_sdcard = env->GetStringUTFChars(pathToSDCard, 0);
     std::string ref = c_reference;
     std::string hyp = c_hypothese;
+    std::string sdc = c_sdcard;
 
-    // initialisation des variables
+    // get the ID for the updateProgressLabel(String) method
+    jclass      cls = env->GetObjectClass(obj);
+    jmethodID   mid = env->GetMethodID(cls, "updateProgressLabel", "([Ljava/lang/String;)V");
+
+    if (mid == 0) return -1;
+
+
+
+    // init all variables
     std::map<std::string, Matrix<float>> references;
     std::map<std::string, Matrix<float>> hypotheses;
     int indR = 0, indH = 0;
     int i = 0, j = 0;
     float distance = 0, mini = FLT_MAX;
+    std::vector<std::string> vocabulaires = { "avance", "recule", "droite", "gauche",
+                                              "etatdurgence", "tournedroite", "tournegauche",
+                                              "faisunflip", "arretetoi" };
     Matrix<int> confusion(vocabulaires.size(), vocabulaires.size());
-
 
     // 1 - Paramétrisation de tout les mots de l'hypothèse et de la références
     for (std::string word:vocabulaires) {
-        references[word] = parametrisation(buildPath(ref, word));
-        hypotheses[word] = parametrisation(buildPath(hyp, word));
+        references[word] = parametrisation( buildPath(sdc, ref, word) );
+        hypotheses[word] = parametrisation( buildPath(sdc, hyp, word) );
     }
 
-    // 2 - Lancement de la reconnaissance et construnction de la matrice de confusion
+    // 2 - Lancement de la reconnaissance et construction de la matrice de confusion
     for (auto& kvr:references) {
         float mini = FLT_MAX;
         int indH = 0, j = 0;
 
         for (auto& kvh:hypotheses) {
+
+            // mise a jour du text de updateProgressLabel
+            std::string msg = kvr.first + " - " + kvh.first;
+            env->CallVoidMethod(obj, mid, msg.c_str());
 
             float distance = dtw(   kvr.second.sizeColumn(), kvh.second.sizeColumn(), 12,
                                     kvr.second, kvh.second);
