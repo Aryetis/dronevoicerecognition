@@ -60,7 +60,7 @@ class MicWavRecorderHandler extends Thread
                                                        // May need some empirical tweaking if for instance
                                                        // the recording trigger itself over a really short but loud Audio burst
     /**** Associated threads ****/
-    MicTestActivity uiActivity; // Activity "linked to"/"which started" this MicWavRecorder //TODO maybe switch to private afterwards
+    MicActivity uiActivity; // Activity "linked to"/"which started" this MicWavRecorder //TODO maybe switch to private afterwards
     private WavStreamHandler audioAnalyser;
                                   // used to analyse mic's input buffer without blocking
                                   // this thread from filling it. ("Producer, Consumer" problem)
@@ -88,7 +88,7 @@ class MicWavRecorderHandler extends Thread
 
 
     MicWavRecorderHandler( long SAMPLE_RATE_, int CHANNEL_MODE_, int ENCODING_FORMAT_,
-                    MicTestActivity uiActivity_) throws MicWavRecorderHandlerException
+                    MicActivity uiActivity_) throws MicWavRecorderHandlerException
     {
 //        if (singletonInstance == null)
 //            singletonInstance = this; // TODO later and better
@@ -116,7 +116,7 @@ class MicWavRecorderHandler extends Thread
         // Initializing buffers
         streamBuffer = new short[bufferSize];
 
-        // Link current MivWavRecorder's thread to its MicTestActivity's thread
+        // Link current MivWavRecorder's thread to its MicActivity's thread
         uiActivity = uiActivity_;
 
         // Initialize and start the WavStreamHandler's thread that will detect audio's spikes

@@ -7,7 +7,6 @@ import android.util.Log;
 
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -119,7 +118,7 @@ if ( !corpusGlobalDir.exists())
 
         // Set output file and stream
         // create specific corpus's subdirectory
-        corpusDir = new File(corpusGlobalDir, MicTestActivity.corpusName);
+        corpusDir = new File(corpusGlobalDir, MicActivity.corpusName);
         if ( !corpusDir.exists())
             try
             {

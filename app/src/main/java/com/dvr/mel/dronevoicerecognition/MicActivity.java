@@ -19,7 +19,7 @@ import java.util.List;
 
 
 /**************************************************************************************************
- *  MicTestActivity in a nutshell:                                                                *
+ *  MicActivity in a nutshell:                                                                *
  *      _ get corpusName and corpusList from Parent Activity's Intent                             *
  *      _ pass corpusName to child Activity's Intent                                              *
  *      _ Use MicWavRecorderHandler (& WavStreamHandler) to record                                *
@@ -27,10 +27,10 @@ import java.util.List;
  *                                                                                                *
  *  Sidenotes :                                                                                   *
  *  _ If it helps, see Mic related Activities as MVC designed activities,                         *
- *    with MicTestActivity being the View,                                                        *
+ *    with MicActivity being the View,                                                        *
  *    MicWavRecorderHandler being a model, the middle-man between UI and IO Files related stuff   *
  *    and WavStreamHandler computing the streams (Mic and IO) and sending update signal to        *
- *    the MicTestActivity/View                                                                    *
+ *    the MicActivity/View                                                                    *
  *  _ When starting a recording session if it is not done till completion no file will be kept.   *
  *    Thus RErecording an already existing corpus will erase it regardless if the user            *
  *    complete the second corpus recording session or not !!!!                                    *
@@ -43,7 +43,7 @@ import java.util.List;
  */
 
 
-public class MicTestActivity extends Activity
+public class MicActivity extends Activity
 {
     /***************************************************
      *                                                 *
@@ -262,7 +262,7 @@ if ( !corpusGlobalDir.exists())
         // close & clean mic (File, outputStream, thread, etc)
         mic.close();
 //TODO  \/ to replace with correct Load()
-Log.i("MicTestActivity", "goToPreviousActivity");
+Log.i("MicActivity", "goToPreviousActivity");
 System.exit(0);
     }
 
@@ -273,7 +273,7 @@ System.exit(0);
         // close & clean mic (File, outputStreap, thread, etc)
         mic.close();
 //TODO  \/ to replace with correct Load()
-Log.i("MicTestActivity", "goToNextActivity");
+Log.i("MicActivity", "goToNextActivity");
 try { Thread.sleep(2000); } catch (InterruptedException e) {e.printStackTrace(); }
 System.exit(0);
     }
