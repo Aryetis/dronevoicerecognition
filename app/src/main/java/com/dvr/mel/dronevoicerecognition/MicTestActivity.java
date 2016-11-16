@@ -53,9 +53,8 @@ public class MicTestActivity extends Activity
 
     // Global variables
 // TODO declare those \/ elsewhere when merging projects
-public static String corpusName="DEBUG";
-public static String appFolderName="/data/data/com.dvr.mel.dronevoicerecognition/Corpus/";
-public static List<String> commands = new ArrayList<>();
+public static String corpusName="DEBUG"; // get this from intent
+public static List<String> commands = new ArrayList<>(); // get this from global variable
 // TODO declare those /\ elsewhere when merging projects
 
     // Class variables
@@ -101,7 +100,7 @@ public static List<String> commands = new ArrayList<>();
 
         /********* Actual Variables initialization *********/
 // TODO initialize those \/ elsewhere when merging projects
-commands.add("test1");;
+commands.add("test1");
 commands.add("test2");
 commands.add("test3");
 commands.add("test4");
@@ -142,7 +141,7 @@ File baseDir = cw.getDir("data", Context.MODE_PRIVATE);
 // create Global Corpus subdirectory
 File corpusGlobalDir = new File(baseDir, "Corpus");
 if ( !corpusGlobalDir.exists())
-corpusGlobalDir.mkdir();
+    return;
 
         // check if the recording sessions has been completed, otherwise we delete all related files and directory
         if ( curCommandListIndex <= commands.size() )
@@ -154,7 +153,12 @@ corpusGlobalDir.mkdir();
             String[] commandFiles = corpusDir.list();
             for (String cf : commandFiles)
                 new File(corpusDir, cf).delete();
+
+            corpusDir.delete();
         }
+
+        // close (and kill threads) MicWavRecorderHandler and its subsidiary WavStreamHandler
+        mic.close();
     }
 
 
@@ -206,7 +210,7 @@ corpusGlobalDir.mkdir();
             }
             case 0:
             {  // stage zero, back_button.text <=> cancel
-                back_btn.setText("Cancel Recording");
+                back_btn.setText(R.string.cancel_recording);
                 break;
             }
             default:
@@ -218,7 +222,7 @@ corpusGlobalDir.mkdir();
                 }
                 else
                 {  // Standard behavior, at least one record previously registered
-                    back_btn.setText("Redo last recording");
+                    back_btn.setText(R.string.redo_last_recording);
                 }
                 break;
             }

@@ -2,6 +2,8 @@
     <string name="app_name">dronevoicerecognition</string>
 
     <string name="title_activity_mic_test">MicTestActivity</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="cancel_recording">Cancel Recording</string>
+    <string name="redo_last_recording">Redo last recording</string>
+
+
 </resources>

@@ -25,14 +25,13 @@ import java.util.Queue;
 /*****************************************
  * TODO List, what to tackle first:
  *          _ Make this class a singleton
- *          _ check private / public variables
  *          _ makes more "safe" thread closing using InteruptEvent
  */
 
 // custom Exception
 class MicWavRecorderHandlerException extends Exception
 {
-    public MicWavRecorderHandlerException(String message)
+    MicWavRecorderHandlerException(String message)
     {
         super(message);
     }
@@ -41,7 +40,7 @@ class MicWavRecorderHandlerException extends Exception
 
 
 
-public class MicWavRecorderHandler extends Thread
+class MicWavRecorderHandler extends Thread
 {
     /***************************************************
      *                                                 *
@@ -51,17 +50,17 @@ public class MicWavRecorderHandler extends Thread
 
     /**** Singleton and lock insurance ****/
     //MicWavRecorderHandler singletonInstance; //TODO when got time
-    public Object lock = new Object(); // shared lock with WavStreamHandler for "producer/consumer" problem resolution
+    final Object lock = new Object(); // shared lock with WavStreamHandler for "producer/consumer" problem resolution
 
     /**** AudioRecord's settings (AUDIO FORMAT SETTINGS) ****/
-    public long SAMPLE_RATE; // in our usecase<=>16000, 16KHz // stored in a long cause it's stored as such in a wav header
-    public int CHANNEL_MODE; // in our usecase<=>AudioFormat.CHANNEL_IN_MONO<=>mono signal
-    public int ENCODING_FORMAT; // in our usecase<=>AudioFormat.ENCODING_PCM_16BIT<=>16 bits
+    long SAMPLE_RATE; // in our usecase<=>16000, 16KHz // stored in a long cause it's stored as such in a wav header
+    int CHANNEL_MODE; // in our usecase<=>AudioFormat.CHANNEL_IN_MONO<=>mono signal
+    int ENCODING_FORMAT; // in our usecase<=>AudioFormat.ENCODING_PCM_16BIT<=>16 bits
     private static int BUFFER_SIZE_MULTIPLICATOR = 10; // Used to define the Audio input's buffer size
                                                        // May need some empirical tweaking if for instance
                                                        // the recording trigger itself over a really short but loud Audio burst
     /**** Associated threads ****/
-    public MicTestActivity uiActivity; // Activity "linked to"/"which started" this MicWavRecorder //TODO maybe switch to private afterwards
+    MicTestActivity uiActivity; // Activity "linked to"/"which started" this MicWavRecorder //TODO maybe switch to private afterwards
     private WavStreamHandler audioAnalyser;
                                   // used to analyse mic's input buffer without blocking
                                   // this thread from filling it. ("Producer, Consumer" problem)
@@ -70,8 +69,8 @@ public class MicWavRecorderHandler extends Thread
     /**** Audio associated variables ****/
     private AudioRecord mic; // "Mic Audio Input" Object
     private short[] streamBuffer; // buffer used to constantly listen to the mic
-    public int bufferSize; // size of following buffers
-    public Queue<short[]> streamBufferQueue; // streamBuffer filled are pushed onto this Queue, waiting for their treatment
+    int bufferSize; // size of following buffers
+    Queue<short[]> streamBufferQueue; // streamBuffer filled are pushed onto this Queue, waiting for their treatment
 
     /**** MicWavRecorder's lifespan variable ****/
     private volatile boolean runningState = true; // describe MicWavRecorder's lifespan
@@ -130,7 +129,7 @@ public class MicWavRecorderHandler extends Thread
 
 
 
-    public void close()
+    void close()
     {
         // closing microphone
         mic.stop();

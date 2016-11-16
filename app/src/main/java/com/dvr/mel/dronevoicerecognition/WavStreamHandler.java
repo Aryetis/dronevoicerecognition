@@ -34,7 +34,7 @@ import java.io.IOException;
 
 
 
-public class WavStreamHandler extends Thread
+class WavStreamHandler extends Thread
 {
     /***************************************************
      *                                                 *
@@ -54,7 +54,7 @@ public class WavStreamHandler extends Thread
                                       // ( "currentBuffer's RMS" > "previousBuffer's RMS" * SENSITIVITY )
                                       // RMS : Average RMS Amplitude value
                                       // => Tweak it if the recording starts "randomly" or user needs to yell at the mic
-                                      // TODO : allow user to modify it in some "OptionActivity"
+                                      // TODO : allow user to modify this value in some "OptionActivity"
     private double bufferAvgRMSAmp = 0; // silence's average amplitude
     int bufferSize; // bufferSize = micHandler.bufferSize;  yes it's redundant but more clear that way
     static private short[] streamBuffer; // copy of a queued streamBuffer, because we don't want to
@@ -64,8 +64,7 @@ public class WavStreamHandler extends Thread
 //                                            // doing this because outputStream can only work with byte[]
     static private short[] silenceBuffer; // "silence measurement" buffer, used to clear recordings
     // TODO : add clearAudio() function in the future to clear the signal by substracting silence average value, specter analysis
-    private long audioLength; // Total length in bytes of the currently recorded PCM Audio's stream TODO: check that it's in bytes
-                              // TODO, keep track of audioLength
+    private long audioLength; // Total length in bytes of the currently recorded PCM Audio's stream
 
     /**** State machine states variables ****/
     private boolean userSpeaking = false; // boolean describing if user is currently speaking or not (using audioAnalyser)
@@ -119,16 +118,21 @@ if ( !corpusGlobalDir.exists())
 
         // Set output file and stream
         // create specific corpus's subdirectory
-        corpusDir = new File(corpusGlobalDir, micHandler.uiActivity.corpusName);
+        corpusDir = new File(corpusGlobalDir, MicTestActivity.corpusName);
         if ( !corpusDir.exists())
-            corpusDir.mkdir();
+            try
+            {
+                if ( ! corpusDir.mkdir() )
+                    throw new IOException("Couldn't create the following directory : "+corpusDir);
+            }
+            catch ( IOException ie ) { ie.printStackTrace(); }
         // Create command's file
         setOutput( micHandler.uiActivity.getCurrentCommandName()+".wav" );
     }
 
 
 
-    public void close()
+    void close()
     {
         // close FileOutputStream and DataOutputStream
         try { dos.close(); fos.close();}
@@ -265,7 +269,7 @@ Log.i("WavStreamHandler", "User is still talking");
         }
 
         /**** Detect if ( "User is STILL NOT talking ") ****/
-        if ( !userSpeaking )
+        if ( !userSpeaking )  // TODO FIX ............................ WHY IS IT ALWAYS TRUE ?!?!?!?!?!?!?!?!?
         {
 Log.i("WavStreamHandler", "User is STILL NOT talking");
             // Update silenceBuffer
@@ -273,7 +277,6 @@ Log.i("WavStreamHandler", "User is STILL NOT talking");
 
             // update bufferAvgRMSAmp
             bufferAvgRMSAmp = newBufferAvgRMSAmp;
-            return;
         }
     }
 
@@ -326,7 +329,7 @@ Log.i("WavStreamHandler", "User is STILL NOT talking");
         try
         {
             // create command's File
-            File commandFile = new File(corpusDir, micHandler.uiActivity.getCurrentCommandName()+".wav");
+            File commandFile = new File(corpusDir, commandName+".wav");
             if ( !commandFile.exists() )
                 commandFile.createNewFile();
             if ( !commandFile.exists() )
@@ -348,7 +351,7 @@ Log.i("WavStreamHandler", "User is STILL NOT talking");
 
 
 
-    public void writeStreamBuffer()
+    private void writeStreamBuffer()
     {   // write the current short[] buffer into the file going through a DataOutputStream
         // thus there is no need to convert those short into bytes manually
         try
