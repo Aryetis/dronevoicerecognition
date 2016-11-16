@@ -7,8 +7,10 @@ import android.util.Log;
 
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
 /**************************************************************************************************
  *  MicWavRecorder in a nutshell:                                                                 *
@@ -27,7 +29,6 @@ import java.io.IOException;
  *
  *
  *          _ Make this class a singleton
- *          _ check private / public variables
  *          _ makes more "safe" thread closing using InteruptEvent
  *          _ Add forced pause(500ms) in between words to recalibrate silence ?
  */
@@ -49,13 +50,13 @@ class WavStreamHandler extends Thread
     private MicWavRecorderHandler micHandler;
 
     /**** Audio associated variables ****/
-    private float SENSITIVITY = 20.F;  // (Empirical value) Used to detect when User start/stop talking
+    private float SENSITIVITY = 5.F;  // (Empirical value) Used to detect when User start/stop talking
                                       // the switch triggers when
                                       // ( "currentBuffer's RMS" > "previousBuffer's RMS" * SENSITIVITY )
                                       // RMS : Average RMS Amplitude value
                                       // => Tweak it if the recording starts "randomly" or user needs to yell at the mic
                                       // TODO : allow user to modify this value in some "OptionActivity"
-    private double bufferAvgRMSAmp = 0; // silence's average amplitude
+    private double silenceAvgRMSAmp = 0; // silence's average amplitude
     int bufferSize; // bufferSize = micHandler.bufferSize;  yes it's redundant but more clear that way
     static private short[] streamBuffer; // copy of a queued streamBuffer, because we don't want to
                                          // hold the producer's thread in hostage during our computing process
@@ -185,10 +186,10 @@ if ( !corpusGlobalDir.exists())
     private void computeStreamBuffer()
     {
         /**** First silence calibration ****/
-        if ( bufferAvgRMSAmp == 0 )
+        if ( silenceAvgRMSAmp == 0 )
         {   // if we analyse the first streamBuffer passed by the mic
             // just calibrate the silence value
-            bufferAvgRMSAmp = getRMSValue();
+            silenceAvgRMSAmp = getRMSValue();
             return;
         }
 
@@ -196,8 +197,8 @@ if ( !corpusGlobalDir.exists())
         double newBufferAvgRMSAmp = getRMSValue();
 
         /**** Detect if ( "User starts talking" ) ****/
-        if ( newBufferAvgRMSAmp > bufferAvgRMSAmp*SENSITIVITY && !userSpeaking )
-        { //TODO FIX THIS !!! the user has to talk louder, and louder AND LOUDER because the avg is updated
+        if ( newBufferAvgRMSAmp >= silenceAvgRMSAmp*SENSITIVITY && !userSpeaking )
+        {
 Log.i("WavStreamHandler", "User starts talking");
             // Switch userSpeaking's state flag
             userSpeaking = true;
@@ -212,7 +213,7 @@ Log.i("WavStreamHandler", "User starts talking");
         }
 
         /**** Detect if ( "User stops talking" ) ****/
-        if ( newBufferAvgRMSAmp < bufferAvgRMSAmp*SENSITIVITY && userSpeaking )
+        if ( newBufferAvgRMSAmp < silenceAvgRMSAmp*SENSITIVITY && userSpeaking )
         {
 Log.i("WavStreamHandler", "User stops talking");
             // Switch userSpeaking's state flag
@@ -224,6 +225,7 @@ Log.i("WavStreamHandler", "User stops talking");
             // Finish current recording, flush and close outputStream
             try
             {
+Log.i("COUCOU","Tu veux voir ma bite");
                 writeStreamBuffer();
                 writeWavHeader(); // Complete file's Wav header
                 fos.close();
@@ -232,29 +234,31 @@ Log.i("WavStreamHandler", "User stops talking");
             { ie.printStackTrace(); }
 
 
-            //TODO FIX THIS \/ c'est dans le désordre tout ca, et en plus tu rentres dedans sans raisons
-            String foo = micHandler.uiActivity.getCurrentCommandName();
-            if ( foo == null ) // getCurrentCommandName() returns null if going OOB / reaching the end of the List
+            // actualize UI, and set currentCommandName to the next one
+            micHandler.uiActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    micHandler.uiActivity.nextCommand();
+                }
+            });
+
+            String commandName = micHandler.uiActivity.getCurrentCommandName(); // get new Command name
+            if ( commandName == null ) // getCurrentCommandName() returns null if going OOB / reaching the end of the List
                 close(); // end of the commandList reached => close everything and move on, the job is done ! Congrats !
             else
             { // if Activity successfully switched to the next Command to record in the list
               // aka we still have new Files to record
 
                 // set next outputFile
-                setOutput( micHandler.uiActivity.getCurrentCommandName()+".wav" );
+                setOutput( commandName+".wav" );
 
 
-                // actualize UI
-                micHandler.uiActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        micHandler.uiActivity.nextCommand();
-                    }
-                });
+
+
             }
 
-            // update bufferAvgRMSAmp
-            bufferAvgRMSAmp = newBufferAvgRMSAmp;
+            // update silenceAvgRMSAmp
+            silenceAvgRMSAmp = newBufferAvgRMSAmp;
             return;
         }
 
@@ -269,14 +273,14 @@ Log.i("WavStreamHandler", "User is still talking");
         }
 
         /**** Detect if ( "User is STILL NOT talking ") ****/
-        if ( !userSpeaking )  // TODO FIX ............................ WHY IS IT ALWAYS TRUE ?!?!?!?!?!?!?!?!?
+        if ( !userSpeaking )  // go home Intelij you're drunk ... this variable is not always true
         {
 Log.i("WavStreamHandler", "User is STILL NOT talking");
             // Update silenceBuffer
             silenceBuffer = streamBuffer;
 
             // update bufferAvgRMSAmp
-            bufferAvgRMSAmp = newBufferAvgRMSAmp;
+            silenceAvgRMSAmp = newBufferAvgRMSAmp;
         }
     }
 
@@ -323,17 +327,18 @@ Log.i("WavStreamHandler", "User is STILL NOT talking");
 
 
 
-    void setOutput(String commandName)
+    void setOutput(String outputFileName)
     {
         // Set the output file of the Audio stream
+        // Note : ".wav" extension added during the call of the method
         try
         {
             // create command's File
-            File commandFile = new File(corpusDir, commandName+".wav");
+            commandFile = new File(corpusDir, outputFileName);
             if ( !commandFile.exists() )
                 commandFile.createNewFile();
             if ( !commandFile.exists() )
-                Log.e("WavStreamHandler", "Couldn't create file : "+corpusDir+"/"+micHandler.uiActivity.getCurrentCommandName()+".wav" );
+                Log.e("WavStreamHandler", "Couldn't create file : "+corpusDir+"/"+outputFileName );
 
             // create FileOutputStream
             fos = new FileOutputStream(commandFile, false); //overWrite the file if it exists
@@ -359,12 +364,10 @@ Log.i("WavStreamHandler", "User is STILL NOT talking");
             for (short s : streamBuffer)
             {
                 dos.writeShort(s);
-                audioLength += bufferSize*2; // we insert "bufferSize ammount of short" <=> "2*bufferSize bytes"
+                audioLength += bufferSize*2; // we insert "bufferSize amount of short" <=> "2*bufferSize bytes"
             }
             dos.flush(); // TODO not sure if that's necessary, close() should be called at the end and thus also flush()
         } catch (IOException ie) { ie.printStackTrace(); }
-
-
     }
 
 
@@ -442,9 +445,21 @@ Log.i("WavStreamHandler", "User is STILL NOT talking");
         header[40]=(byte) (audioLength & 0xff); header[41]=(byte) ((audioLength >> 8) & 0xff);
         header[42]=(byte) ((audioLength >> 16) & 0xff); header[43]=(byte) ((audioLength >> 24) & 0xff); // Actual Audio Data (PCM) length
 
-        // Write completed header
-        try { fos.write(header, 0, 44); }
-        catch (IOException e) { e.printStackTrace(); }
+
+String decodedDataUsingUTF8;
+try {
+    decodedDataUsingUTF8 = new String(header, "UTF-8");  // Best way to decode using "UTF-8"
+    Log.i("PRINTING HEADER WESH", ("Text Decryted using UTF-8 : " + decodedDataUsingUTF8));
+} catch (Exception e) {
+    e.printStackTrace();
+}
+
+    // Write completed header using randomAccess
+    try {
+        RandomAccessFile rafOut = new RandomAccessFile(commandFile.getAbsolutePath(), "rw");
+        rafOut.seek(0);
+        rafOut.write(header); }
+    catch ( Exception e ) { e.printStackTrace(); }
     }
 
 

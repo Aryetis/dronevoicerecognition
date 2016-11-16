@@ -39,7 +39,7 @@ import java.util.List;
 
 /*****************************************
  * TODO List, what to tackle first:
- *
+ *      _ merge + introduce intente and global variable
  */
 
 
@@ -144,18 +144,18 @@ if ( !corpusGlobalDir.exists())
     return;
 
         // check if the recording sessions has been completed, otherwise we delete all related files and directory
-        if ( curCommandListIndex <= commands.size() )
-        {
-            // get corpus's specific directory
-            File corpusDir = new File(corpusGlobalDir, corpusName);
-
-            // delete its internal files ( *.wav )
-            String[] commandFiles = corpusDir.list();
-            for (String cf : commandFiles)
-                new File(corpusDir, cf).delete();
-
-            corpusDir.delete();
-        }
+//        if ( curCommandListIndex < commands.size() )
+//        {
+//            // get corpus's specific directory
+//            File corpusDir = new File(corpusGlobalDir, corpusName);
+//
+//            // delete its internal files ( *.wav )
+//            String[] commandFiles = corpusDir.list();
+//            for (String cf : commandFiles)
+//                new File(corpusDir, cf).delete();
+//
+//            corpusDir.delete();
+//        }
 
         // close (and kill threads) MicWavRecorderHandler and its subsidiary WavStreamHandler
         mic.close();
