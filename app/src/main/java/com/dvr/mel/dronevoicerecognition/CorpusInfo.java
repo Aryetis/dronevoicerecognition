@@ -35,4 +35,18 @@ public class CorpusInfo implements Serializable{
         _usersCorpora = usersCorpora;
         _commands = commands;
     }
+
+    public static void clean(String corpusName) {
+        // Delete all files related to the corpus designed by corpusName
+        File corpusToDelete = new File(corpusGlobalDir, corpusName);
+        deleteDirectory(corpusToDelete);
+    }
+
+    private static void deleteDirectory(File directory) {
+        if (directory.isDirectory())
+            for (File f : directory.listFiles())
+                deleteDirectory(f);
+
+        directory.delete();
+    }
 }
