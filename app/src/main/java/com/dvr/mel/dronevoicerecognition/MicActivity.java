@@ -158,7 +158,7 @@ commands.add("test3");
 
     private void previousCommand()
     {   // Iterate to the previous command to be recorded in command's list
-        curCommandListIndex--;
+        --curCommandListIndex;
         updateActivity();
     }
 
@@ -166,7 +166,7 @@ commands.add("test3");
 
     public void nextCommand()
     {   // iterate to the next command to be recorded listed in commands's List
-        curCommandListIndex++;
+        ++curCommandListIndex;
         updateActivity();
     }
 
@@ -200,7 +200,6 @@ commands.add("test3");
             {
                 if ( curCommandListIndex >= commands.size() )
                 {   // curCommandListIndex is getting out of Bound<=>we reached the end of our commandList
-Log.e("MicActivity", "Recording session finished");
                     recordingCompleted = true;
                     goToNextActivity();
                     return;
