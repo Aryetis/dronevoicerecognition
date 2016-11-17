@@ -242,15 +242,10 @@ if ( !corpusGlobalDir.exists())
             if ( commandName == null ) // getCurrentCommandName() returns null if going OOB / reaching the end of the List
                 close(); // end of the commandList reached => close everything and move on, the job is done ! Congrats !
             else
-            { // if Activity successfully switched to the next Command to record in the list
-              // aka we still have new Files to record
-
-                // set next outputFile
+            {   // if Activity successfully switched to the next Command to record in the list
+                // aka we still have new Files to record
+                // => set next outputFile
                 setOutput( commandName+".wav" );
-
-
-
-
             }
 
             // update silenceAvgRMSAmp
@@ -261,6 +256,7 @@ if ( !corpusGlobalDir.exists())
         /**** Detect if ( "User is still talking ") ****/
         if ( userSpeaking )
         {
+Log.e("WavStreamHandler","Currently recording : "+micHandler.uiActivity.getCurrentCommandName() + "@ : "+commandFile.getAbsolutePath());
             // Continue recording
             writeStreamBuffer();
 
@@ -268,7 +264,7 @@ if ( !corpusGlobalDir.exists())
         }
 
         /**** Detect if ( "User is STILL NOT talking ") ****/
-        if ( !userSpeaking )  // go home Intelij you're drunk ... this variable is not always true
+        if ( !userSpeaking )  // go home Intelij you're drunk ... this variable is NOT always true
         {
             // Update silenceBuffer
             silenceBuffer = streamBuffer;

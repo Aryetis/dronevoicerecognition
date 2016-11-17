@@ -137,8 +137,7 @@ commands.add("test3");
 
     @Override
     protected void onDestroy()
-    {
-        // check if the recording sessions has been completed
+    {   // check if the recording sessions has been completed
         // otherwise we delete all related files and directory
         if ( !recordingCompleted )
             destroyCorpus();
@@ -158,8 +157,7 @@ commands.add("test3");
 
 
     private void previousCommand()
-    {
-        // Iterate to the previous command to be recorded in command's list
+    {   // Iterate to the previous command to be recorded in command's list
         curCommandListIndex--;
         updateActivity();
     }
@@ -167,16 +165,14 @@ commands.add("test3");
 
 
     public void nextCommand()
-    {
-        // iterate to the next command to be recorded listed in commands's List
+    {   // iterate to the next command to be recorded listed in commands's List
         curCommandListIndex++;
         updateActivity();
     }
 
 
     public void toggleRecordingState()
-    {
-        // Toggle the visibility of the circle progress bar thingy during the recording
+    {   // Toggle the visibility of the circle progress bar thingy during the recording
         recordingState = !recordingState;
         updateActivity();
     }
@@ -185,6 +181,7 @@ commands.add("test3");
 
     private void updateActivity()
     {   // update UI and state variables
+        // DO NOT CHANGE THE CURRENT COMMAND BEING RECORDED !
 
         // update back_button text and handle enter() & exit()
         switch (curCommandListIndex)
@@ -228,7 +225,7 @@ Log.e("MicActivity", "Recording session finished");
 
 
     public String getCurrentCommandName()
-    {
+    {   // return string containing text of current command being recorded
         if ( curCommandListIndex >= commands.size() )
             return null; // return null if going OOB
         else
@@ -290,8 +287,7 @@ Log.e("MicActivity","destroyCorpus Method called");
 
 
     private void goToPreviousActivity()
-    {
-        // close & clean mic (File, outputStream, thread, etc)
+    {   // close & clean mic (File, outputStream, thread, etc)
         mic.close();
 //TODO  \/ to replace with correct Load()
 Log.i("MicActivity", "goToPreviousActivity");
@@ -302,8 +298,7 @@ System.exit(0);
 
 
     private void goToNextActivity()
-    {
-        // close & clean mic (File, outputStreap, thread, etc)
+    {   // close & clean mic (File, outputStreap, thread, etc)
         mic.close();
 //TODO  \/ to replace with correct Load()
 Log.i("MicActivity", "goToNextActivity");
