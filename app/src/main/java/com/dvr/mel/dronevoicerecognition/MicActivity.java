@@ -59,7 +59,8 @@ public static List<String> commands = new ArrayList<>(); // get this from global
 
     /**** Class variables ****/
     MicWavRecorderHandler mic;
-    private int curCommandListIndex = 0; // iterator used to iterate over the commandList list
+//    private int curCommandListIndex = 0; // iterator used to iterate over the commandList list
+public int curCommandListIndex = 0; // iterator used to iterate over the commandList list
     private boolean recordingState = false;
 
     /**** UI accessors variables ****/
@@ -105,8 +106,6 @@ public static List<String> commands = new ArrayList<>(); // get this from global
 commands.add("test1");
 commands.add("test2");
 commands.add("test3");
-//commands.add("test4");
-//commands.add("test5");
 // TODO initialize those /\ elsewhere when merging projects
 
         // initialize UI accessors
@@ -156,6 +155,16 @@ commands.add("test3");
 
 
 
+    public String getCurrentCommandName()
+    {   // return string containing text of current command being recorded
+        if ( curCommandListIndex >= commands.size() )
+            return null; // return null if going OOB
+        else
+            return commands.get(curCommandListIndex);
+    }
+
+
+
     private void previousCommand()
     {   // Iterate to the previous command to be recorded in command's list
         --curCommandListIndex;
@@ -168,6 +177,8 @@ commands.add("test3");
     {   // iterate to the next command to be recorded listed in commands's List
         ++curCommandListIndex;
         updateActivity();
+//        WavStreamHandler.chibre.notify();
+
     }
 
 
@@ -223,15 +234,6 @@ commands.add("test3");
     }
 
 
-    public String getCurrentCommandName()
-    {   // return string containing text of current command being recorded
-        if ( curCommandListIndex >= commands.size() )
-            return null; // return null if going OOB
-        else
-            return commands.get(curCommandListIndex);
-    }
-
-
 
     /***************************************************
      *                                                 *
@@ -256,8 +258,6 @@ File baseDir = cw.getDir("data", Context.MODE_PRIVATE);
 File corpusGlobalDir = new File(baseDir, "Corpus");
 if ( !corpusGlobalDir.exists())
 return true;
-
-Log.e("MicActivity","destroyCorpus Method called");
 
         // get corpus's specific directory
         File corpusDir = new File(corpusGlobalDir, corpusName);
@@ -301,7 +301,7 @@ System.exit(0);
         mic.close();
 //TODO  \/ to replace with correct Load()
 Log.i("MicActivity", "goToNextActivity");
-try { Thread.sleep(2000); } catch (InterruptedException e) {e.printStackTrace(); }
+try { Thread.sleep(500); } catch (InterruptedException e) {e.printStackTrace(); }
 if (!recordingCompleted) onDestroy();
 System.exit(0);
     }

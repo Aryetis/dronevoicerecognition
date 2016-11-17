@@ -3,7 +3,6 @@ package com.dvr.mel.dronevoicerecognition;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.media.AudioFormat;
-import android.util.Log;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -49,14 +48,14 @@ class WavStreamHandler extends Thread
     private MicWavRecorderHandler micHandler;
 
     /**** Audio associated variables ****/
-    private float SENSITIVITY = 5.F;  // (Empirical value) Used to detect when User start/stop talking
+    float SENSITIVITY = 5.F;  // (Empirical value) Used to detect when User start/stop talking
                                       // the switch triggers when
                                       // ( "currentBuffer's RMS" > "previousBuffer's RMS" * SENSITIVITY )
                                       // RMS : Average RMS Amplitude value
                                       // => Tweak it if the recording starts "randomly" or user needs to yell at the mic
                                       // TODO : allow user to modify this value in some "OptionActivity"
     private double silenceAvgRMSAmp = 0; // silence's average amplitude
-    int bufferSize; // bufferSize = micHandler.bufferSize;  yes it's redundant but more clear that way
+    private int bufferSize; // bufferSize = micHandler.bufferSize;  yes it's redundant but more clear that way
     static private short[] streamBuffer; // copy of a queued streamBuffer, because we don't want to
                                          // hold the producer's thread in hostage during our computing process
                                          // basic "Producer/Consumer" protocol stuff
@@ -75,6 +74,18 @@ class WavStreamHandler extends Thread
 
     /**** WavStreamHandler's lifespan variable ****/
     private volatile boolean runningState = true;
+
+    /**** UI Critical Section Routine ****/
+    private final Runnable nextCommandRoutine = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            micHandler.uiActivity.nextCommand();
+            synchronized (this) { this.notify(); }
+        }
+    };
+
 
 
 
@@ -226,21 +237,25 @@ if ( !corpusGlobalDir.exists())
             catch (IOException ie)
             { ie.printStackTrace(); }
 
-
             // Update the current Command to the next one (and update UI accordingly)
-            micHandler.uiActivity.runOnUiThread(new  Runnable()
+            // modifying curCommandIndex, used right after that to get new commandName,
+            //    => Thus synchronized section
+            // AND modifying UI element from non-UI context
+            //    => Thus runOnUIThread subroutine
+            // Praise the all mighty """"Java security"""" at its finest ...
+            synchronized ( nextCommandRoutine )
             {
-                @Override
-                public void run() { micHandler.uiActivity.nextCommand(); }
-            });
-
-            commandName = micHandler.uiActivity.getCurrentCommandName(); // get new Command name
-            if ( commandName != null ) // getCurrentCommandName() returns null if going OOB / reaching the end of the List
-            {   // if Activity successfully switched to the next Command to record in the list
-                // aka we still have new Files to record
-                // => set next outputFile
-                setOutput( commandName+".wav" );
+                micHandler.uiActivity.runOnUiThread( nextCommandRoutine) ;
+                try { nextCommandRoutine.wait(); } catch (Exception e) { e.printStackTrace();}
             }
+
+            // Set next file Output
+                commandName = micHandler.uiActivity.getCurrentCommandName(); // get new Command name
+
+            if ( commandName != null ) // getCurrentCommandName() returns null if going OOB / reaching the end of the List
+                // if Activity successfully switched to the next Command to record in the list
+                // aka we still have new Files to record => set next outputFile
+                setOutput( commandName+".wav" );
 
             // update silenceAvgRMSAmp
             silenceAvgRMSAmp = newBufferAvgRMSAmp;
@@ -250,7 +265,6 @@ if ( !corpusGlobalDir.exists())
         /**** Detect if ( "User is still talking ") ****/
         if ( userSpeaking )
         {
-Log.e("WavStreamHandler","Currently recording : "+commandName + "@ : "+commandFile.getAbsolutePath());
             // Continue recording
             writeStreamBuffer();
 
@@ -308,9 +322,8 @@ Log.e("WavStreamHandler","Currently recording : "+commandName + "@ : "+commandFi
 
 
 
-    void setOutput(String outputFileName)
+    private boolean setOutput(String outputFileName)
     {
-Log.e("WESH", commandName);
         // Set the output file of the Audio stream
         // Note : ".wav" extension should be added at the call of the method
         try
@@ -318,7 +331,7 @@ Log.e("WESH", commandName);
             // create command's File
             commandFile = new File(corpusDir, outputFileName);
             if ( !commandFile.exists() )
-                commandFile.createNewFile();
+                return commandFile.createNewFile();
 
             // create FileOutputStream
             fos = new FileOutputStream(commandFile, false); //overWrite the file if it exists
@@ -332,6 +345,8 @@ Log.e("WESH", commandName);
         }
         catch (IOException e)
         { e.printStackTrace(); }
+
+        return true;
     }
 
 
