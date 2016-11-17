@@ -49,4 +49,9 @@ public class CorpusInfo implements Serializable{
 
         directory.delete();
     }
+
+    public static void addCorpus(String name, Corpus corpus) {
+        usersCorpora.add(name);
+        corpusMap.put(name, corpus);
+    }
 }
