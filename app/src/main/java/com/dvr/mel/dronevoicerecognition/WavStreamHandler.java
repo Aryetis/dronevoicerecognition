@@ -24,7 +24,7 @@ import java.io.RandomAccessFile;
  * TODO List, what to tackle first:
  *
  *          URGENT STUFF !!!!!
- *          _ fix corrupted wav ?
+ *          _ fix last file recording only header
  *
  *
  *          _ Make this class a singleton
@@ -198,7 +198,6 @@ if ( !corpusGlobalDir.exists())
         /**** Detect if ( "User starts talking" ) ****/
         if ( newBufferAvgRMSAmp >= silenceAvgRMSAmp*SENSITIVITY && !userSpeaking )
         {
-Log.i("WavStreamHandler", "User starts talking");
             // Switch userSpeaking's state flag
             userSpeaking = true;
 
@@ -214,7 +213,6 @@ Log.i("WavStreamHandler", "User starts talking");
         /**** Detect if ( "User stops talking" ) ****/
         if ( newBufferAvgRMSAmp < silenceAvgRMSAmp*SENSITIVITY && userSpeaking )
         {
-Log.i("WavStreamHandler", "User stops talking");
             // Switch userSpeaking's state flag
             userSpeaking = false;
 
@@ -263,7 +261,6 @@ Log.i("WavStreamHandler", "User stops talking");
         /**** Detect if ( "User is still talking ") ****/
         if ( userSpeaking )
         {
-Log.i("WavStreamHandler", "User is still talking");
             // Continue recording
             writeStreamBuffer();
 
@@ -273,7 +270,6 @@ Log.i("WavStreamHandler", "User is still talking");
         /**** Detect if ( "User is STILL NOT talking ") ****/
         if ( !userSpeaking )  // go home Intelij you're drunk ... this variable is not always true
         {
-Log.i("WavStreamHandler", "User is STILL NOT talking");
             // Update silenceBuffer
             silenceBuffer = streamBuffer;
 

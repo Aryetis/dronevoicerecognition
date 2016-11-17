@@ -51,22 +51,24 @@ public class MicActivity extends Activity
      *                                                 *
      ***************************************************/
 
-    // Global variables
+    /**** Global variables ****/
 // TODO declare those \/ elsewhere when merging projects
 public static String corpusName="DEBUG"; // get this from intent
 public static List<String> commands = new ArrayList<>(); // get this from global variable
 // TODO declare those /\ elsewhere when merging projects
 
-    // Class variables
+    /**** Class variables ****/
     MicWavRecorderHandler mic;
     private int curCommandListIndex = 0; // iterator used to iterate over the commandList list
     private boolean recordingState = false;
 
-    // UI accessors variables
+    /**** UI accessors variables ****/
     TextView tv; // Display the currently recording command
     ProgressBar talkingIndicator; // Circle Display bar, indicate when the app is recording
     Button back_btn; // Allow the user to go back to previous recording/Activity
 
+    /**** State machine variable ****/
+    private boolean recordingCompleted = false;
 
 
     /***************************************************
@@ -103,15 +105,18 @@ public static List<String> commands = new ArrayList<>(); // get this from global
 commands.add("test1");
 commands.add("test2");
 commands.add("test3");
-commands.add("test4");
-commands.add("test5");
+//commands.add("test4");
+//commands.add("test5");
 // TODO initialize those /\ elsewhere when merging projects
 
         // initialize UI accessors
         tv = (TextView) findViewById(R.id.backgroundTextView);
         talkingIndicator = (ProgressBar) findViewById(R.id.talk_indicator);
 
-        // Initialize MicWavRecorder
+        // Destroy previously recorded Corpus with identical name
+        destroyCorpus();
+
+        // Initialize MicWavRecorder (will set output Folder and files)
         try
         {
             mic = new MicWavRecorderHandler( 16000, AudioFormat.CHANNEL_IN_MONO,
@@ -127,41 +132,20 @@ commands.add("test5");
         mic.start(); // start MicWavRecorder's thread
 
         // Initialize UI
-        updateUI();
+        updateActivity();
     }
 
     @Override
     protected void onDestroy()
     {
-// TODO DEBUG \/ to be removed and use Global Variables after merging
-// get Application's Context
-ContextWrapper cw = new ContextWrapper(this.getApplicationContext());
-// get Application's data subfolder directory
-File baseDir = cw.getDir("data", Context.MODE_PRIVATE);
-// create Global Corpus subdirectory
-File corpusGlobalDir = new File(baseDir, "Corpus");
-if ( !corpusGlobalDir.exists())
-    return;
-
-        // check if the recording sessions has been completed, otherwise we delete all related files and directory
-        if ( curCommandListIndex < commands.size() ) // goToNextActivity() triggers when curCommandListIndex == commands.size()
-        {
-            // get corpus's specific directory
-            File corpusDir = new File(corpusGlobalDir, corpusName);
-
-
-            // delete its internal files ( *.wav )
-            String[] commandFiles = corpusDir.list();
-            for (String cf : commandFiles)
-                new File(corpusDir, cf).delete();
-
-            corpusDir.delete();
-        }
+        // check if the recording sessions has been completed
+        // otherwise we delete all related files and directory
+        if ( !recordingCompleted )
+            destroyCorpus();
 
         // close (and kill threads) MicWavRecorderHandler and its subsidiary WavStreamHandler
         mic.close();
     }
-
 
 
 
@@ -177,7 +161,7 @@ if ( !corpusGlobalDir.exists())
     {
         // Iterate to the previous command to be recorded in command's list
         curCommandListIndex--;
-        updateUI();
+        updateActivity();
     }
 
 
@@ -186,7 +170,7 @@ if ( !corpusGlobalDir.exists())
     {
         // iterate to the next command to be recorded listed in commands's List
         curCommandListIndex++;
-        updateUI();
+        updateActivity();
     }
 
 
@@ -194,13 +178,14 @@ if ( !corpusGlobalDir.exists())
     {
         // Toggle the visibility of the circle progress bar thingy during the recording
         recordingState = !recordingState;
-        updateUI();
+        updateActivity();
     }
 
 
 
-    private void updateUI()
-    {
+    private void updateActivity()
+    {   // update UI and state variables
+
         // update back_button text and handle enter() & exit()
         switch (curCommandListIndex)
         {
@@ -218,6 +203,8 @@ if ( !corpusGlobalDir.exists())
             {
                 if ( curCommandListIndex >= commands.size() )
                 {   // curCommandListIndex is getting out of Bound<=>we reached the end of our commandList
+Log.e("MicActivity", "Recording session finished");
+                    recordingCompleted = true;
                     goToNextActivity();
                     return;
                 }
@@ -230,7 +217,7 @@ if ( !corpusGlobalDir.exists())
         }
 
         // update backgroundTextView
-        tv.setText(commands.get(curCommandListIndex));
+        tv.setText(getCurrentCommandName());
 
         // update debugTalkingIndicator's state
         if (recordingState)
@@ -247,6 +234,50 @@ if ( !corpusGlobalDir.exists())
         else
             return commands.get(curCommandListIndex);
     }
+
+
+
+    /***************************************************
+     *                                                 *
+     *             DESTROY FOLDER METHOD               *
+     *           (UI driven deletion method)           *
+     *                                                 *
+     ***************************************************/
+
+
+
+    private boolean destroyCorpus()
+    {   // Method called when user cancels the recording session / application crashes / etc
+        // This is not a mic related IO operation so it DOES NOT belong to the "Controller"/MicWavRecorderHandler
+        boolean destroySuccess = true;
+
+// TODO DEBUG \/ to be removed and use Global Variables after merging
+// get Application's Context
+ContextWrapper cw = new ContextWrapper(this.getApplicationContext());
+// get Application's data subfolder directory
+File baseDir = cw.getDir("data", Context.MODE_PRIVATE);
+// create Global Corpus subdirectory
+File corpusGlobalDir = new File(baseDir, "Corpus");
+if ( !corpusGlobalDir.exists())
+return true;
+
+Log.e("MicActivity","destroyCorpus Method called");
+
+        // get corpus's specific directory
+        File corpusDir = new File(corpusGlobalDir, corpusName);
+        if (!corpusDir.exists())
+            return true;
+
+        // delete its internal files ( *.wav )
+        String[] commandFiles = corpusDir.list();
+        if (commandFiles.length != 0) // if folder is not empty, destroy its content
+            for (String cf : commandFiles)
+                destroySuccess = destroySuccess && new File(corpusDir, cf).delete();
+
+        return destroySuccess && corpusDir.delete();
+    }
+
+
 
 
     /***************************************************
@@ -277,7 +308,7 @@ System.exit(0);
 //TODO  \/ to replace with correct Load()
 Log.i("MicActivity", "goToNextActivity");
 try { Thread.sleep(2000); } catch (InterruptedException e) {e.printStackTrace(); }
-onDestroy();
+if (!recordingCompleted) onDestroy();
 System.exit(0);
     }
 
