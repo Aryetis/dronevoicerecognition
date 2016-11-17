@@ -55,7 +55,8 @@ public class finalCorpus extends AppCompatActivity {
     }
 
     public void corpusPassHandler(View view) {
-        // Mettre à jours la class CorpusInfo
+        // Mettre à jours la class CorpusInfo.
+        CorpusInfo.addCorpus(b.getString("name"), b.getSerializable("corpus"));
 
     }
 
