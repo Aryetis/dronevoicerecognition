@@ -1,8 +1,15 @@
 package com.dvr.mel.dronevoicerecognition;
 
 import android.util.ArrayMap;
+import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -77,5 +84,55 @@ public class CorpusInfo implements Serializable{
         usersCorpora = new ArrayList<>(this._usersCorpora);
         commands = new ArrayList<>(this._commands);
         corpusMap = new HashMap<>(this._corpusMap);
+    }
+
+    public static void saveToSerializedFile() {
+        File corpusInfoSave = new File(CorpusInfo.baseDir, "corpusInfoSaved");
+
+        try {
+            CorpusInfo ci = new CorpusInfo();
+            ci.updateFromStaticVariables();
+
+            FileOutputStream fileOut = new FileOutputStream(corpusInfoSave.getAbsolutePath());
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+
+            out.writeObject(ci);
+
+            out.close();
+            fileOut.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void loadFromSerializedFile() {
+        File corpusInfoSave = new File(CorpusInfo.baseDir, "corpusInfoSaved");
+
+        try {
+            CorpusInfo ci = new CorpusInfo();
+
+            FileInputStream fileIn = new FileInputStream(corpusInfoSave.getAbsolutePath());
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+
+            ci = (CorpusInfo) in.readObject();
+            ci.updateToStaticVariables();
+
+            in.close();
+            fileIn.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
