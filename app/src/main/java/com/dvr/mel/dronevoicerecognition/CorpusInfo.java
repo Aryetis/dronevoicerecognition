@@ -7,8 +7,10 @@ import java.io.Serializable;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by leo on 16/11/16.
@@ -16,14 +18,14 @@ import java.util.Map;
 
 public class CorpusInfo implements Serializable{
     public static File baseDir, corpusGlobalDir;
-    public static List<String> referencesCorpora = new ArrayList<>();
-    public static List<String> usersCorpora = new ArrayList<>();
+    public static Set<String> referencesCorpora = new HashSet<>();
+    public static Set<String> usersCorpora = new HashSet<>();
     public static List<String> commands = new ArrayList<>();
     public static Map<String, Corpus> corpusMap = new HashMap<>();
 
     public File _baseDir, _corpusGlobalDir;
-    public List<String> _referencesCorpora = new ArrayList<>();
-    public List<String> _usersCorpora = new ArrayList<>();
+    public Set<String> _referencesCorpora = new HashSet<>();
+    public Set<String> _usersCorpora = new HashSet<>();
     public List<String> _commands = new ArrayList<>();
     public Map<String, Corpus> _corpusMap = new HashMap<>();
 
@@ -64,8 +66,8 @@ public class CorpusInfo implements Serializable{
     public void updateFromStaticVariables() {
         this._baseDir = new File(baseDir.getAbsolutePath());
         this._corpusGlobalDir = new File(corpusGlobalDir.getAbsolutePath());
-        this._referencesCorpora = new ArrayList<>(referencesCorpora);
-        this._usersCorpora = new ArrayList<>(usersCorpora);
+        this._referencesCorpora = new HashSet<>(referencesCorpora);
+        this._usersCorpora = new HashSet<>(usersCorpora);
         this._commands = new ArrayList<>(commands);
         this._corpusMap = new HashMap<>(corpusMap);
     }
@@ -73,8 +75,8 @@ public class CorpusInfo implements Serializable{
     public void updateToStaticVariables() {
         baseDir = new File(this._baseDir.getAbsolutePath());
         corpusGlobalDir = new File(this._corpusGlobalDir.getAbsolutePath());
-        referencesCorpora = new ArrayList<>(this._referencesCorpora);
-        usersCorpora = new ArrayList<>(this._usersCorpora);
+        referencesCorpora = new HashSet<>(this._referencesCorpora);
+        usersCorpora = new HashSet<>(this._usersCorpora);
         commands = new ArrayList<>(this._commands);
         corpusMap = new HashMap<>(this._corpusMap);
     }

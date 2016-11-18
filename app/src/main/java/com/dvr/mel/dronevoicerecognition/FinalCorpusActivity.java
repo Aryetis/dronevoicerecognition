@@ -11,6 +11,9 @@ import android.widget.TextView;
 import org.w3c.dom.Text;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 public class FinalCorpusActivity extends AppCompatActivity {
     public Bundle b;
@@ -49,7 +52,7 @@ public class FinalCorpusActivity extends AppCompatActivity {
             // TODO : faire le systeme multi locuteur
             float percent = computeRecognitionRatio(
                     CorpusInfo.corpusGlobalDir.getAbsolutePath(),
-                    CorpusInfo.referencesCorpora.get(0),
+                    (String)CorpusInfo.referencesCorpora.toArray()[0],
                     b.getString("name"));
 
             middleLabel.setText(Float.toString(percent));
@@ -67,6 +70,24 @@ public class FinalCorpusActivity extends AppCompatActivity {
     public void corpusPassHandler(View view) {
         // Mettre à jours la class CorpusInfo.
         CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
+
+
+
+
+        try {
+            CorpusInfo ci = new CorpusInfo();
+            ci.updateFromStaticVariables();
+            File corpusInfoSave = new File(CorpusInfo.baseDir, "corpusInfoSaved");
+            FileOutputStream fileOut = new FileOutputStream(corpusInfoSave.getAbsolutePath());
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+
+            out.writeObject(ci);
+
+            out.close();
+            fileOut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         startActivity(new Intent(this, ManageCorpusesActivity.class));
     }

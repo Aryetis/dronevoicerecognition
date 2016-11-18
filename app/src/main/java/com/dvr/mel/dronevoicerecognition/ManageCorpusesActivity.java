@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public class ManageCorpusesActivity extends AppCompatActivity {
 
@@ -36,14 +37,63 @@ public class ManageCorpusesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manage_corpuses);
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
+        CorpusInfo ci = new CorpusInfo();
+        ci.updateFromStaticVariables();
 
         /*
         * USER RECYCLER VIEW LIST
         * */
 
         // List adapter of recycler view
-        userAdapter = new RecyclerView.Adapter() {
+        userAdapter = getUserAdapter();
+        // Instanciate layoutmanager
+        layoutManager = new LinearLayoutManager(context);
+
+        // Get recycler view
+        userCorpusesRecyclerView = (RecyclerView) findViewById(R.id.user_corpuses_recyclerview);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(userCorpusesRecyclerView.getContext(),
+                layoutManager.getOrientation());
+
+        // Add same divider decorator
+        userCorpusesRecyclerView.addItemDecoration(dividerItemDecoration);
+
+        // List adapter
+        userCorpusesRecyclerView.setAdapter(userAdapter);
+
+        // Add layout Manager
+
+        userCorpusesRecyclerView.setLayoutManager(layoutManager);
+
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        String secureName = (String) CorpusInfo.usersCorpora.toArray()[item.getItemId()];
+        Corpus corpus = CorpusInfo.corpusMap.get(secureName);
+        switch (item.getTitle().toString()){
+            case "Remove":
+                CorpusInfo.corpusMap.remove(secureName);
+                CorpusInfo.referencesCorpora.remove(secureName);
+                CorpusInfo.usersCorpora.remove(secureName);
+                Toast.makeText(context, "Reference " + corpus.getDisplayName() + " removed.", Toast.LENGTH_SHORT).show();
+                break;
+            case "Set as reference":
+                corpus.setAsReference();
+                CorpusInfo.referencesCorpora.add(secureName);
+                Toast.makeText(context, "Reference " + corpus.getDisplayName() + " set.", Toast.LENGTH_SHORT).show();
+            case "Unset reference":
+                corpus.unsetReference();
+                CorpusInfo.referencesCorpora.remove(secureName);
+                Toast.makeText(context, "Reference " + corpus.getDisplayName() + " unset.", Toast.LENGTH_SHORT).show();
+                break;
+        }
+        this.recreate();
+        return super.onContextItemSelected(item);
+    }
+
+    public RecyclerView.Adapter getUserAdapter(){
+       return new RecyclerView.Adapter() {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
@@ -62,7 +112,7 @@ public class ManageCorpusesActivity extends AppCompatActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
                 final int finalpos = position;
-                final String secureName = CorpusInfo.usersCorpora.get(position);
+                final String secureName = (String) CorpusInfo.usersCorpora.toArray()[position];
                 final Corpus corpusObject = CorpusInfo.corpusMap.get(secureName);
                 ((RoundedLetterView)holder.itemView.findViewById(R.id.rlv_rlv)).setTitleText("C"+position);
                 ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(corpusObject.getDisplayName());
@@ -88,51 +138,6 @@ public class ManageCorpusesActivity extends AppCompatActivity {
                 return CorpusInfo.usersCorpora.size();
             }
         };
-
-        // Instanciate layoutmanager
-        layoutManager = new LinearLayoutManager(context);
-
-        // Get recycler view
-        userCorpusesRecyclerView = (RecyclerView) findViewById(R.id.user_corpuses_recyclerview);
-
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(userCorpusesRecyclerView.getContext(),
-                layoutManager.getOrientation());
-
-        // Add same divider decorator
-        userCorpusesRecyclerView.addItemDecoration(dividerItemDecoration);
-
-        // List adapter
-        userCorpusesRecyclerView.setAdapter(userAdapter);
-
-        // Add layout Manager
-
-        userCorpusesRecyclerView.setLayoutManager(layoutManager);
-
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        String secureName = CorpusInfo.usersCorpora.get(item.getItemId());
-        Corpus corpus = CorpusInfo.corpusMap.get(secureName);
-        switch (item.getTitle().toString()){
-            case "Remove":
-                CorpusInfo.corpusMap.remove(secureName);
-                CorpusInfo.referencesCorpora.remove(secureName);
-                CorpusInfo.usersCorpora.remove(secureName);
-                Toast.makeText(context, "Reference " + corpus.getDisplayName() + " removed.", Toast.LENGTH_SHORT).show();
-                break;
-            case "Set as reference":
-                corpus.setAsReference();
-                CorpusInfo.referencesCorpora.add(secureName);
-                Toast.makeText(context, "Reference " + corpus.getDisplayName() + " set.", Toast.LENGTH_SHORT).show();
-            case "Unset reference":
-                corpus.unsetReference();
-                CorpusInfo.referencesCorpora.remove(secureName);
-                Toast.makeText(context, "Reference " + corpus.getDisplayName() + " unset.", Toast.LENGTH_SHORT).show();
-                break;
-        }
-        userAdapter.notifyDataSetChanged();
-        return super.onContextItemSelected(item);
     }
 
     public void addNewCorpus(View view) {
@@ -174,5 +179,18 @@ public class ManageCorpusesActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        userAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        userAdapter = getUserAdapter();
+        userAdapter.notifyDataSetChanged();
     }
 }
