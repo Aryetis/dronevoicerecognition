@@ -1,8 +1,10 @@
 package com.dvr.mel.dronevoicerecognition;
 
+import android.content.Intent;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -34,9 +36,11 @@ public class FinalCorpusActivity extends AppCompatActivity {
         TextView middleLabel = (TextView) findViewById(R.id.labelRecognition);
 
         if (CorpusInfo.referencesCorpora.isEmpty()) {
+            Log.e("final activity", "aucune reference définie, ajout dans la liste");
             middleLabel = (TextView) findViewById(R.id.labelRecognition);
             middleLabel.setText("Aucune références à été définie");
 
+            CorpusInfo.referencesCorpora.add(b.getString("name"));
             CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
         }
 
@@ -56,11 +60,15 @@ public class FinalCorpusActivity extends AppCompatActivity {
         // Suppression des fichiers du corpus et du dossier.
         // ==> Appeler la méthode CoprpusInfo.clean(String <nom du corpus>)
         CorpusInfo.clean(b.getString("name"));
+
+        startActivity(new Intent(this, ManageCorpusesActivity.class));
     }
 
     public void corpusPassHandler(View view) {
         // Mettre à jours la class CorpusInfo.
         CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
+
+        startActivity(new Intent(this, ManageCorpusesActivity.class));
     }
 
     // call from C++ code
