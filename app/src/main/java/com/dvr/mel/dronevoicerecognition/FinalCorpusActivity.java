@@ -24,7 +24,6 @@ public class FinalCorpusActivity extends AppCompatActivity {
         // get all the parameters
         b = getIntent().getExtras();
         String corpusName = b.getString("name");
-        //String corpusName = stringFromJNI();
 
         // change the first textView
         String textForLabel = "corpus " + corpusName + " enregistré";
@@ -32,7 +31,7 @@ public class FinalCorpusActivity extends AppCompatActivity {
         label.setText(textForLabel);
 
         // check if one or more corpus are set as references
-        // no - put a message that there is no references yet to compare with
+        // The first corpus is automatically set as reference
         TextView middleLabel = (TextView) findViewById(R.id.labelRecognition);
 
         if (CorpusInfo.referencesCorpora.isEmpty()) {
@@ -42,6 +41,8 @@ public class FinalCorpusActivity extends AppCompatActivity {
 
             CorpusInfo.referencesCorpora.add(b.getString("name"));
             CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
+
+            CorpusInfo.saveToSerializedFile();
         }
 
         // yes - run the recognition code true all the references and display the succes percent
@@ -61,12 +62,16 @@ public class FinalCorpusActivity extends AppCompatActivity {
         // ==> Appeler la méthode CoprpusInfo.clean(String <nom du corpus>)
         CorpusInfo.clean(b.getString("name"));
 
+        CorpusInfo.saveToSerializedFile();
+
         startActivity(new Intent(this, ManageCorpusesActivity.class));
     }
 
     public void corpusPassHandler(View view) {
         // Mettre à jours la class CorpusInfo.
         CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
+
+        CorpusInfo.saveToSerializedFile();
 
         startActivity(new Intent(this, ManageCorpusesActivity.class));
     }
