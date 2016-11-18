@@ -193,11 +193,17 @@ public class ManageCorpusesActivity extends AppCompatActivity {
                 EditText nameEditText =
                         (EditText)((AlertDialog)dialog).findViewById(R.id.newCorpusNameEditText);
                 String name = (nameEditText != null ? nameEditText.getText().toString().trim() : "");
+
+                /*EditText descriptionEditText =
+                        (EditText)((AlertDialog)dialog).findViewById(R.id.newCorpusDescritpionEditText);
+                String description = (nameEditText != null ? descriptionEditText.getText().toString().trim() : "");*/
                 if (!name.isEmpty()) {
                     Intent intentToCreateCorpus = new Intent(context, MicActivity.class);
-                    intentToCreateCorpus.getExtras().putString("name", name);
-
-                    startActivity(intentToCreateCorpus);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("name", name); // TODO sanitarize name
+                    bundle.putSerializable("corpus", new Corpus(name));
+                    //bundle.putSerializable("corpus", new Corpus(name, description));
+                    startActivity(intentToCreateCorpus, bundle);
 
                     Toast.makeText(context, "Add executed now!", Toast.LENGTH_SHORT).show();
                     userMockList.add(name);

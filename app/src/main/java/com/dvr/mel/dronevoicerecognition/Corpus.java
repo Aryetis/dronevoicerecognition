@@ -1,10 +1,13 @@
 package com.dvr.mel.dronevoicerecognition;
+
+import java.io.Serializable;
+
 /**
  * Created by Evan on 16/11/2016.
  *
  */
 
-class Corpus {
+class Corpus implements Serializable{
     private static Corpus _lastReference = null;
 
     private String mName;
@@ -26,6 +29,8 @@ class Corpus {
         this.mName = name;
         this.mDescription = "";
         this.mHasDescription = false;
+        // If first ever created it is the reference
+        if(_lastReference == null) this.setAsReference();
     }
 
     public String getName() {
