@@ -19,15 +19,6 @@ import java.io.RandomAccessFile;
  *                                                                                                *
  *************************************************************************************************/
 
-/*****************************************
- * TODO List, what to tackle first:
- *          _ fix corrupted audio files
- *
- *
- *          _ Make this class a singleton
- *          _ makes more "safe" thread closing using InteruptEvent
- *          _ Add forced pause(500ms) in between words to recalibrate silence ?
- */
 
 
 
@@ -39,14 +30,13 @@ class WavStreamHandler extends Thread
      *                                                 *
      ***************************************************/
 
-    /**** Singleton and lock insurance ****/
-    //MicWavRecorderHandler singletonInstance; //TODO when got time
+    
 
     /**** Associated thread ****/
     private MicWavRecorderHandler micHandler;
 
     /**** Audio associated variables ****/
-    float SENSITIVITY = 5.F;  // (Empirical value) Used to detect when User start/stop talking
+    float SENSITIVITY = 10.F;  // (Empirical value) Used to detect when User start/stop talking
                                       // the switch triggers when
                                       // ( "currentBuffer's RMS" > "previousBuffer's RMS" * SENSITIVITY )
                                       // RMS : Average RMS Amplitude value
@@ -97,11 +87,7 @@ class WavStreamHandler extends Thread
 
 
     WavStreamHandler(MicWavRecorderHandler micHandler_)
-    {
-        // Note : AudioRecord mic's stream is assumed to be already correctly initialized and recording
-
-        //        if (singletonInstance == null)
-//            singletonInstance = this; // TODO later and better
+    {   // Note : AudioRecord mic's stream is assumed to be already correctly initialized and recording
 
         // Link WavStreamHandler's Thread with MicWavRecorderHandler's Thread
         micHandler = micHandler_;
@@ -161,16 +147,15 @@ if ( !corpusGlobalDir.exists())
 
     @Override
     public void run()
-    {
-        // Basic Producer(MicWavRecorderHandler) and Consumer(WavStreamHandler) problem
+    {   // Basic Producer(MicWavRecorderHandler) and Consumer(WavStreamHandler) problem
 
         while (runningState)
         {
-            synchronized (micHandler.lock) // CRITICAL SECTION : synchronize on the same lock with Producer
+            synchronized (MicWavRecorderHandler.lock) // CRITICAL SECTION : synchronize on the same lock with Producer
             {
                 while (micHandler.streamBufferQueue.peek() == null)
                 {   // while streamBufferQueue is empty / nothing to consume =>  wait
-                    try { micHandler.lock.wait(); } catch (InterruptedException ie) { ie.printStackTrace();}
+                    try { MicWavRecorderHandler.lock.wait(); } catch (InterruptedException ie) { ie.printStackTrace();}
                 }
                 // dequeuing streamBuffer from the Queue, immediately copy it in order to not hold back the "producer"
                 streamBuffer = micHandler.streamBufferQueue.remove();
@@ -263,32 +248,25 @@ if ( !corpusGlobalDir.exists())
 
         /**** Detect if ( "User is still talking ") ****/
         if ( userSpeaking )
-        {
             // Continue recording
             writeStreamBuffer();
 
-            return;
-        }
-
         /**** Detect if ( "User is STILL NOT talking ") ****/
-        if ( !userSpeaking )  // go home Intelij you're drunk ... this variable is NOT always true
-        {
+        else
             // update bufferAvgRMSAmp
             silenceAvgRMSAmp = newBufferAvgRMSAmp;
-        }
     }
 
 
 
     private double getRMSValue()
-    {
-        // return RMS value of streamBuffer
+    {   // return RMS value of streamBuffer
         double rmsVal=0.F;
 
         for( short s : streamBuffer )
             rmsVal+=s*s;
 
-        return Math.sqrt(rmsVal/(bufferSizeElmt));
+        return Math.sqrt(rmsVal/bufferSizeElmt);
     }
 
 
@@ -353,7 +331,7 @@ if ( !corpusGlobalDir.exists())
 
     private void writeStreamBuffer()
    {   // Write the current short[] buffer into the file going through a DataOutputStream
-        // thus there is no need to convert those short into bytes manually
+       // thus there is no need to convert those short into bytes manually
 
        // update audioLength
        audioLength += bufferSizeByte; // audioLength <=> side in byte of actual PCM audio data ;
