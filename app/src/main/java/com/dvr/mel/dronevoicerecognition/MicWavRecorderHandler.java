@@ -55,7 +55,7 @@ class MicWavRecorderHandler extends Thread
     final Object lock = new Object(); // shared lock with WavStreamHandler for "producer/consumer" problem resolution
 
     /**** AudioRecord's settings (AUDIO FORMAT SETTINGS) ****/
-    long SAMPLE_RATE; // in our usecase<=>16000, 16KHz // stored in a long cause it's stored as such in a wav header
+    int SAMPLE_RATE; // in our usecase<=>16000, 16KHz
     int CHANNEL_MODE; // in our usecase<=>AudioFormat.CHANNEL_IN_MONO<=>mono signal
     int ENCODING_FORMAT; // in our usecase<=>AudioFormat.ENCODING_PCM_16BIT<=>16 bits
     private static int BUFFER_SIZE_MULTIPLICATOR = 10; // Used to define the Audio input's buffer size
@@ -89,7 +89,7 @@ class MicWavRecorderHandler extends Thread
 
 
 
-    MicWavRecorderHandler( long SAMPLE_RATE_, int CHANNEL_MODE_, int ENCODING_FORMAT_,
+    MicWavRecorderHandler( int SAMPLE_RATE_, int CHANNEL_MODE_, int ENCODING_FORMAT_,
                     MicActivity uiActivity_) throws MicWavRecorderHandlerException
     {
 //        if (singletonInstance == null)
@@ -105,7 +105,7 @@ class MicWavRecorderHandler extends Thread
                     // value expressed in bytes
                     // using 10 times the getMinBufferSize to avoid IO operations and reduce a bad "producer / consumer" case's probabilities
         mic = new AudioRecord( MediaRecorder.AudioSource.MIC,
-                (int)SAMPLE_RATE, CHANNEL_MODE,
+                SAMPLE_RATE, CHANNEL_MODE,
                 ENCODING_FORMAT, bufferSize );
                 // mic always on, completing a non-circular buffer
                 // use audioAnalyser (WavStreamHandler) to detect if buffer is relevant or not

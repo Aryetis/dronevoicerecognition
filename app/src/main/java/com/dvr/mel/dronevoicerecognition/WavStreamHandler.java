@@ -361,7 +361,8 @@ if ( !corpusGlobalDir.exists())
        try
        {
             for (short s : streamBuffer)
-                dos.writeShort(s);
+//                dos.writeShort(s); // writing in big-indian DEBUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUG
+                   dos.writeShort(   Short.reverseBytes(s) ); // little indian test
             dos.flush(); // flush current buffer into fos=>file
        } catch (IOException ie) { ie.printStackTrace(); }
    }
@@ -371,6 +372,10 @@ if ( !corpusGlobalDir.exists())
     private void writeWavHeader()
     {   // Write WAV header into outputStream according to "USER DETERMINED VARIABLES"
         // refers to : http://soundfile.sapp.org/doc/WaveFormat/ for more information on WAV header
+
+
+int foo =  (int) micHandler.SAMPLE_RATE       & 0xffffffff ;
+foo = Integer.reverseBytes(foo);
 
         // calculating variables needed to complete headers
         byte bitsPerSample;
@@ -385,7 +390,7 @@ if ( !corpusGlobalDir.exists())
                 ? (bitsPerSample * micHandler.SAMPLE_RATE * 2 / 8) // stereo signal
                 : (bitsPerSample * micHandler.SAMPLE_RATE / 8); // mono signal
         long dataAndSubHeaderSize = audioLength+36;
-        int nbrOfChannel = (micHandler.CHANNEL_MODE == AudioFormat.CHANNEL_IN_STEREO) ? '2' : '1';
+        int nbrOfChannel = (micHandler.CHANNEL_MODE == AudioFormat.CHANNEL_IN_STEREO) ? 2 : 1;
 
         // Completing header (little-indian
         byte[] header = new byte[44];
@@ -401,15 +406,29 @@ if ( !corpusGlobalDir.exists())
         header[8] ='W'; header[9]='A'; header[10]='V'; header[11]='E'; // WAVE
         // "fmt" sub-chunk
         header[12]='f'; header[13]='m'; header[14]='t'; header[15]=' '; // fmt (start of "fmt" sub-chunk)
-        header[16]=16; header[17]='0'; header[18]='0'; header[19]='0'; // size of the fmt sub-chunk (minus the "fmt" start block 12->15) // 16 because it's PCM
-        header[20]='1'; header[21]='0'; // compression setting, 1<=> no compression
+        header[16]=16; header[17]=0; header[18]=0; header[19]=0; // size of the fmt sub-chunk (minus the "fmt" start block 12->15) // 16 because it's PCM
+        header[20]=1; header[21]=0; // compression setting, 1<=> no compression
         header[22]=(byte) nbrOfChannel; header[23]= 0;// number of channel
+
+
+//        header[24] = 0x0;       // 16 KHz en brut //TODO
+//        header[25] = 0x8;
+//        header[26] = 0xE;
+//        header[27] = 0x3;
+
+
         header[24]=(byte) (micHandler.SAMPLE_RATE & 0xff); header[25]=(byte) ((micHandler.SAMPLE_RATE >> 8) & 0xff);
         header[26]=(byte) ((micHandler.SAMPLE_RATE >> 16) & 0xff); header[27]=(byte) ((micHandler.SAMPLE_RATE >> 24) & 0xff); // sample rate (KHz)
         header[28]=(byte) (bytePerBlock & 0xff); header[29]=(byte) ((bytePerBlock >> 8) & 0xff);
         header[30]=(byte) ((bytePerBlock >> 16) & 0xff); header[31]=(byte) ((bytePerBlock >> 24) & 0xff); // bytePerBlock
-        header[32]=(byte) (nbrOfChannel*bitsPerSample/8); header[33]='0'; // block alignment / number of bytes for one sample
-        header[34]=bitsPerSample; header[35]='0';// bitsPerSample
+
+
+        // TODO faire un reverseByte sur l'octet 32
+//        header[32]=(byte) (nbrOfChannel*bitsPerSample/8); header[33]=0; // block alignment / number of bytes for one sample
+        header[32] = 0x2 ; header[33] = 0x0;
+
+
+        header[34]=bitsPerSample; header[35]=0;// bitsPerSample
         // "data" sub-chunk
         header[36]='d'; header[37]='a'; header[38]='t'; header[39]='a'; // data (start of "data" sub-chunk)
         header[40]=(byte) (audioLength & 0xff); header[41]=(byte) ((audioLength >> 8) & 0xff);
