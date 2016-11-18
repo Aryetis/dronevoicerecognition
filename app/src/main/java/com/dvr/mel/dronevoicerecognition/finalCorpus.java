@@ -24,7 +24,6 @@ public class finalCorpus extends AppCompatActivity {
         String corpusName = b.getString("corpusName");
         //String corpusName = stringFromJNI();
 
-
         // change the first textView
         String textForLabel = "corpus " + corpusName + " enregistré";
         TextView label = (TextView) findViewById(R.id.label);
@@ -51,14 +50,12 @@ public class finalCorpus extends AppCompatActivity {
         // Suppression des fichiers du corpus et du dossier.
         // ==> Appeler la méthode CoprpusInfo.clean(String <nom du corpus>)
         CorpusInfo.clean(b.getString("name"));
-
     }
 
     public void corpusPassHandler(View view) {
         // Mettre à jours la class CorpusInfo.
         CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
     }
-
 
     // call from C++ code
     public void updateProgressLabel(String newText) {
@@ -70,4 +67,6 @@ public class finalCorpus extends AppCompatActivity {
     static {
         System.loadLibrary("native-lib");
     }
+
+
 }
