@@ -20,8 +20,6 @@ class Corpus implements Serializable{
         this.mName = name;
         this.mDisplayName = displayName;
         mHasDisplayName = !mDisplayName.isEmpty();
-        // If first ever created it is the reference
-        if(CorpusInfo.referencesCorpora.isEmpty()) this.setAsReference();
     }
 
     public Corpus(String name)
@@ -29,8 +27,6 @@ class Corpus implements Serializable{
         this.mName = name;
         this.mDisplayName = name;
         this.mHasDisplayName = false;
-        // If first ever created it is the reference
-        if(CorpusInfo.referencesCorpora.isEmpty()) this.setAsReference();
     }
 
     public String getName() {

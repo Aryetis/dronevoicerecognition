@@ -23,16 +23,11 @@ import java.util.ArrayList;
 public class ManageCorpusesActivity extends AppCompatActivity {
 
 
-    RecyclerView.Adapter adapter;
     RecyclerView.Adapter userAdapter;
-    RecyclerView staticCorpusesRecyclerView;
     RecyclerView userCorpusesRecyclerView;
     LinearLayoutManager layoutManager;
     Context context = this;
-    // TODO Link with real data
-    final ArrayList<String> staticMockList = new ArrayList<String>();
-    // TODO Link with real data
-    final ArrayList<String> userMockList = new ArrayList<String>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,66 +36,7 @@ public class ManageCorpusesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manage_corpuses);
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-       /*
-        * STATIC RECYCLER VIEW LIST
-        * */
-        // Layout manager of recycler view
-        layoutManager = new LinearLayoutManager(context);
 
-        // List adapter of recycler view
-        adapter = new RecyclerView.Adapter() {
-            @Override
-            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-
-
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.base_rounded_letter_view_item_list, parent, false);
-
-                return new RecyclerView.ViewHolder(view) {
-                    @Override
-                    public String toString() {
-                        return super.toString();
-                    }
-                };
-            }
-
-            @Override
-            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-                final int finalpos = position;
-                ((RoundedLetterView)holder.itemView.findViewById(R.id.rlv_rlv)).setTitleText("C"+position);
-                ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(staticMockList.get(position));
-                holder.itemView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-                    @Override
-                    public void onCreateContextMenu(ContextMenu contextMenu, final View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-
-                        contextMenu.setHeaderTitle("Select an action");
-                        contextMenu.add(0, finalpos, 0, "Set as reference");
-                        ManageCorpusesActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
-                    }
-
-                });
-
-            }
-
-            @Override
-            public int getItemCount() {
-                return staticMockList.size();
-            }
-        };
-
-        // Get recycler view
-        staticCorpusesRecyclerView = (RecyclerView) findViewById(R.id.corpuses_recyclerview);
-
-        // Add divider decorator
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(staticCorpusesRecyclerView.getContext(),
-                layoutManager.getOrientation());
-        staticCorpusesRecyclerView.addItemDecoration(dividerItemDecoration);
-
-        // List adapter
-        staticCorpusesRecyclerView.setAdapter(adapter);
-
-        // Add layout Manager
-        staticCorpusesRecyclerView.setLayoutManager(layoutManager);
 
         /*
         * USER RECYCLER VIEW LIST
@@ -126,14 +62,18 @@ public class ManageCorpusesActivity extends AppCompatActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
                 final int finalpos = position;
+                final Corpus corpusObject = ((Corpus)CorpusInfo.corpusMap.get(position));
                 ((RoundedLetterView)holder.itemView.findViewById(R.id.rlv_rlv)).setTitleText("C"+position);
-                ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(userMockList.get(position));
+                ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(corpusObject.getDisplayName());
                 holder.itemView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
                     @Override
                     public void onCreateContextMenu(ContextMenu contextMenu, final View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
 
                         contextMenu.setHeaderTitle("Select an action");
-                        contextMenu.add(0, finalpos, 0, "Set as reference");
+                        if(corpusObject.isReference())
+                            contextMenu.add(0, finalpos, 0, "Unset reference");
+                        else
+                            contextMenu.add(0, finalpos, 0, "Set as reference");
                         contextMenu.add(0, finalpos, 0, "Remove");
                         ManageCorpusesActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
                     }
@@ -144,13 +84,18 @@ public class ManageCorpusesActivity extends AppCompatActivity {
 
             @Override
             public int getItemCount() {
-                return userMockList.size();
+                return CorpusInfo.usersCorpora.size();
             }
         };
 
+        // Instanciate layoutmanager
+        layoutManager = new LinearLayoutManager(context);
 
         // Get recycler view
         userCorpusesRecyclerView = (RecyclerView) findViewById(R.id.user_corpuses_recyclerview);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(userCorpusesRecyclerView.getContext(),
+                layoutManager.getOrientation());
 
         // Add same divider decorator
         userCorpusesRecyclerView.addItemDecoration(dividerItemDecoration);
@@ -159,23 +104,33 @@ public class ManageCorpusesActivity extends AppCompatActivity {
         userCorpusesRecyclerView.setAdapter(userAdapter);
 
         // Add layout Manager
-        layoutManager = new LinearLayoutManager(context);
+
         userCorpusesRecyclerView.setLayoutManager(layoutManager);
 
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
+        String secureName = CorpusInfo.usersCorpora.get(item.getItemId());
+        Corpus corpus = CorpusInfo.corpusMap.get(secureName);
         switch (item.getTitle().toString()){
             case "Remove":
-                userMockList.remove(item.getItemId());
-                userAdapter.notifyDataSetChanged();
+                CorpusInfo.corpusMap.remove(secureName);
+                CorpusInfo.referencesCorpora.remove(secureName);
+                CorpusInfo.usersCorpora.remove(secureName);
+                Toast.makeText(context, "Reference " + corpus.getDisplayName() + " removed.", Toast.LENGTH_SHORT).show();
                 break;
             case "Set as reference":
-                // TODO Set as reference
+                corpus.setAsReference();
+                CorpusInfo.referencesCorpora.add(secureName);
+                Toast.makeText(context, "Reference " + corpus.getDisplayName() + " set.", Toast.LENGTH_SHORT).show();
+            case "Unset reference":
+                corpus.unsetReference();
+                CorpusInfo.referencesCorpora.remove(secureName);
+                Toast.makeText(context, "Reference " + corpus.getDisplayName() + " unset.", Toast.LENGTH_SHORT).show();
                 break;
         }
-        Toast.makeText(context, "Removed " + item.getItemId(), Toast.LENGTH_SHORT).show();
+        userAdapter.notifyDataSetChanged();
         return super.onContextItemSelected(item);
     }
 
