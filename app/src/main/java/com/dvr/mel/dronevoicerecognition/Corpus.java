@@ -1,5 +1,7 @@
 package com.dvr.mel.dronevoicerecognition;
 
+import android.os.Parcelable;
+
 import java.io.Serializable;
 
 /**

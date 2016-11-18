@@ -199,15 +199,10 @@ public class ManageCorpusesActivity extends AppCompatActivity {
                 String description = (nameEditText != null ? descriptionEditText.getText().toString().trim() : "");*/
                 if (!name.isEmpty()) {
                     Intent intentToCreateCorpus = new Intent(context, MicActivity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putString("name", name); // TODO sanitarize name
-                    bundle.putSerializable("corpus", new Corpus(name));
-                    //bundle.putSerializable("corpus", new Corpus(name, description));
-                    startActivity(intentToCreateCorpus, bundle);
-
-                    Toast.makeText(context, "Add executed now!", Toast.LENGTH_SHORT).show();
-                    userMockList.add(name);
-                    userAdapter.notifyDataSetChanged();
+                    String secureName = CorpusInfo.sanitarizeName(name);
+                    intentToCreateCorpus.putExtra("name", secureName);
+                    intentToCreateCorpus.putExtra("corpus", new Corpus(secureName, name));
+                    startActivity(intentToCreateCorpus);
                 }
                 else
                     Toast.makeText(context, "The name field is empty!", Toast.LENGTH_SHORT).show();
