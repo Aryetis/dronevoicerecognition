@@ -7,10 +7,8 @@
 
 #define CORPUS_DIRECTORY    "./corpus/dronevolant_bruite"
 
-
 Matrix<float> parametrisation(std::string word);
 std::string buildPath(std::string init, std::string locuteur, std::string word);
-std::string reconnaissance(std::string unknowWord);
 
 
 

@@ -34,22 +34,65 @@
 
 
 
+Matrix<int> computeRecognitionOne(  std::string sdc, std::string ref,
+                                    std::string hyp);
+
 
 
 
 
 extern "C" JNIEXPORT jfloat JNICALL
 Java_com_dvr_mel_dronevoicerecognition_FinalCorpusActivity_computeRecognitionRatio(
-        JNIEnv *env, jobject obj, jstring pathToSDCard,
-        jstring reference, jstring hypothese) {
+        JNIEnv *env, jobject obj,
+        jstring pathToSDCard, jobjectArray references, jstring hypothese) {
 
-    // convert all parameters to be usable by C++ functions
-    const char *c_reference = env->GetStringUTFChars(reference, 0);
-    const char *c_hypothese = env->GetStringUTFChars(hypothese, 0);
-    const char *c_sdcard = env->GetStringUTFChars(pathToSDCard, 0);
-    std::string ref = c_reference;
-    std::string hyp = c_hypothese;
-    std::string sdc = c_sdcard;
+    // convertion des paramètres -------------------------------------------------------------------
+    std::vector<std::string> v_references;
+    std::string s_pathToSDCard, s_hypothese;
+
+    s_pathToSDCard  = env->GetStringUTFChars(pathToSDCard, 0);
+    s_hypothese     = env->GetStringUTFChars(hypothese, 0);
+    env->ReleaseStringUTFChars(pathToSDCard, s_pathToSDCard.c_str());
+    env->ReleaseStringUTFChars(hypothese, s_hypothese.c_str());
+
+    jsize nbReference = env->GetArrayLength(references);
+    for (int i = 0; i < nbReference; ++i) {
+        jstring         j_tmp = (jstring) env->GetObjectArrayElement(references, i);
+        std::string     s_tmp = env->GetStringUTFChars(j_tmp, 0);
+
+        v_references.push_back(s_tmp);
+
+        env->ReleaseStringUTFChars(j_tmp, s_tmp.c_str());
+    }
+
+    // lancement de l'algorithme sur toutes les references -----------------------------------------
+    std::vector<std::string> vocabulary = { "avance", "recule", "droite", "gauche",
+                                            "etatdurgence", "tournedroite", "tournegauche",
+                                            "faisunflip", "arretetoi" };
+    Matrix<int> confusion(vocabulary.size(), vocabulary.size());
+
+    for (int i = 0; i < v_references.size(); ++i) {
+        Matrix<int> tmp = computeRecognitionOne(s_pathToSDCard, v_references[i], s_hypothese);
+        confusion = confusion + tmp;
+    }
+
+    // Calcul du taux de reconnaissance ------------------------------------------------------------
+
+    float nbCalcul = confusion.sum();
+    float nbSuccess = confusion.trace();
+    float ratio = nbSuccess / nbCalcul;
+
+    return ratio;
+}
+
+
+/**
+ * Permet de calculer la matrice de confusion calculer à partir d'un corpus hypothese et d'une
+ * seule référence. Cette matrice de confusion sera utilise plus tard pour calculer la taux de
+ * reconnaissance dans un systeme multilocuteur
+ */
+Matrix<int> computeRecognitionOne(  std::string sdc, std::string ref,
+                                    std::string hyp) {
 
     // get the ID for the updateProgressLabel(String) method
     //jclass      cls = env->GetObjectClass(obj);
@@ -57,26 +100,24 @@ Java_com_dvr_mel_dronevoicerecognition_FinalCorpusActivity_computeRecognitionRat
 
     //if (mid == 0) return -1;
 
-
-
     // init all variables
     std::map<std::string, Matrix<float>> references;
     std::map<std::string, Matrix<float>> hypotheses;
     int indR = 0, indH = 0;
     int i = 0, j = 0;
     float distance = 0, mini = FLT_MAX;
-    std::vector<std::string> vocabulaires = { "avance", "recule", "droite", "gauche",
-                                              "etatdurgence", "tournedroite", "tournegauche",
-                                              "faisunflip", "arretetoi" };
-    Matrix<int> confusion(vocabulaires.size(), vocabulaires.size());
+
+    std::vector<std::string> vocabulary = { "avance", "recule", "droite", "gauche",
+                                            "etatdurgence", "tournedroite", "tournegauche",
+                                            "faisunflip", "arretetoi" };
+
+    Matrix<int> confusion(vocabulary.size(), vocabulary.size());
 
     // 1 - Paramétrisation de tout les mots de l'hypothèse et de la références
-    for (std::string word:vocabulaires) {
+    for (std::string word:vocabulary) {
         references[word] = parametrisation( buildPath(sdc, ref, word) );
         hypotheses[word] = parametrisation( buildPath(sdc, hyp, word) );
     }
-
-    return 98.0;
 
     // 2 - Lancement de la reconnaissance et construction de la matrice de confusion
     for (auto& kvr:references) {
@@ -89,6 +130,10 @@ Java_com_dvr_mel_dronevoicerecognition_FinalCorpusActivity_computeRecognitionRat
             //std::string msg = kvr.first + " - " + kvh.first;
             //env->CallVoidMethod(obj, mid, msg.c_str());
 
+            /* Since the input are linked, staticaly i cannot used directely each percent to calculate
+             * the final value. I need to get all the confusion matrix and add them together to
+             * be able to calculate properly the succes perent
+             */
             float distance = dtw(   kvr.second.sizeColumn(), kvh.second.sizeColumn(), 12,
                                     kvr.second, kvh.second);
 
@@ -105,11 +150,5 @@ Java_com_dvr_mel_dronevoicerecognition_FinalCorpusActivity_computeRecognitionRat
         i++;
     }
 
-    // analyse de la matrice de confusion et calcul du taux de reconnaissance
-    float nbCalcul = confusion.sum();
-    float nbSucces = confusion.trace();
-    float nbError = nbCalcul - nbSucces;
-    float taux = nbSucces / nbCalcul;
-
-    return taux;
+    return confusion;
 }

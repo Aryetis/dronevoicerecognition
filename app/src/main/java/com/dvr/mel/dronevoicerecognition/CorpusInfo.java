@@ -37,6 +37,10 @@ public class CorpusInfo implements Serializable{
 
     public CorpusInfo() {    }
 
+    /**
+     * Delete all the files and directories related to one corpus from the phone memory.
+     * @param corpusName
+     */
     public static void clean(String corpusName) {
         // Delete all files related to the corpus designed by corpusName
         File corpusToDelete = new File(corpusGlobalDir, corpusName);
@@ -51,11 +55,23 @@ public class CorpusInfo implements Serializable{
         directory.delete();
     }
 
+    /**
+     * Update some static variables from the CorpusInfo class if a corpus has been add.
+     * @param name
+     * @param corpus
+     */
     public static void addCorpus(String name, Corpus corpus) {
         usersCorpora.add(name);
         corpusMap.put(name, corpus);
     }
 
+    /**
+     * Since the user can call his corpus the way he want, we need to be sure that the name will
+     * word under the android system. So we "clean" the name by replacing space by '_' or removing
+     * accent. both name are kept so the real name will appear in the corpus list.
+     * @param name
+     * @return
+     */
     public static String sanitarizeName(String name){
         name = name.replace(' ', '_').replace('*', '_');
         name = name.toLowerCase();
@@ -68,6 +84,10 @@ public class CorpusInfo implements Serializable{
         return sb.toString();
     }
 
+    /**
+     * Will update the variables from the instance which is calling the method with the value from
+     * the static variables
+     */
     public void updateFromStaticVariables() {
         this._baseDir = new File(baseDir.getAbsolutePath());
         this._corpusGlobalDir = new File(corpusGlobalDir.getAbsolutePath());
@@ -77,6 +97,10 @@ public class CorpusInfo implements Serializable{
         this._corpusMap = new HashMap<>(corpusMap);
     }
 
+    /**
+     * Will update the static variables of the class with the value of the variables from the instan
+     * ce which is calling the method
+     */
     public void updateToStaticVariables() {
         baseDir = new File(this._baseDir.getAbsolutePath());
         corpusGlobalDir = new File(this._corpusGlobalDir.getAbsolutePath());
@@ -86,6 +110,12 @@ public class CorpusInfo implements Serializable{
         corpusMap = new HashMap<>(this._corpusMap);
     }
 
+
+    /**
+     * Will save the CorpusInfo class into a serialized file.
+     * In order to be sure that the static variables are correctly updates before writing down the
+     * file, an instance need to be created and the method updateFromStaticVariables called.
+     */
     public static void saveToSerializedFile() {
         File corpusInfoSave = new File(CorpusInfo.baseDir, "corpusInfoSaved");
 
@@ -110,6 +140,11 @@ public class CorpusInfo implements Serializable{
     }
 
 
+    /**
+     * Will load the CorpusInfo class from his saved which is a serialized file.
+     * In order to be sure that the static variables are correctly updates, an instance need to be
+     * created and the method updateToStaticVariables called.
+     */
     public static void loadFromSerializedFile() {
         File corpusInfoSave = new File(CorpusInfo.baseDir, "corpusInfoSaved");
 
