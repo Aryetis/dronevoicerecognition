@@ -11,6 +11,7 @@ import org.w3c.dom.Text;
 import java.io.File;
 
 public class finalCorpus extends AppCompatActivity {
+    public Bundle b;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +20,7 @@ public class finalCorpus extends AppCompatActivity {
 
 
         // get all the parameters
-        Bundle b = getIntent().getExtras();
+        b = getIntent().getExtras();
         String corpusName = b.getString("corpusName");
         //String corpusName = stringFromJNI();
 
@@ -44,9 +45,22 @@ public class finalCorpus extends AppCompatActivity {
             float percent = computeRecognitionRatio(CorpusInfo.corpusGlobalDir.getAbsolutePath(), "M01", "M02");
             middleLabel.setText(Float.toString(percent));
         }
+    }
+
+    public void corpusFailHandler(View view) {
+        // Suppression des fichiers du corpus et du dossier.
+        // ==> Appeler la méthode CoprpusInfo.clean(String <nom du corpus>)
+        CorpusInfo.clean(b.getString("name"));
 
     }
 
+    public void corpusPassHandler(View view) {
+        // Mettre à jours la class CorpusInfo.
+        CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
+    }
+
+
+    // call from C++ code
     public void updateProgressLabel(String newText) {
         TextView progressLabel = (TextView) findViewById(R.id.progressLabel);
         progressLabel.setText(newText);
