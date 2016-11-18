@@ -96,52 +96,12 @@ public class LauncherActivity extends AppCompatActivity {
             CorpusInfo.commands.add("arretetoi");
 
             // save the file
-            try {
-                CorpusInfo ci = new CorpusInfo();
-                ci.updateFromStaticVariables();
-
-                FileOutputStream fileOut = new FileOutputStream(corpusInfoSave.getAbsolutePath());
-                ObjectOutputStream out = new ObjectOutputStream(fileOut);
-
-                out.writeObject(ci);
-
-                out.close();
-                fileOut.close();
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+           CorpusInfo.saveToSerializedFile();
         }
 
         // it exist
         else {
-            Log.e("launcher", "le fichier serialisé existe");
-            try {
-                CorpusInfo ci = new CorpusInfo();
-
-                FileInputStream fileIn = new FileInputStream(corpusInfoSave.getAbsolutePath());
-                ObjectInputStream in = new ObjectInputStream(fileIn);
-
-                ci = (CorpusInfo) in.readObject();
-                ci.updateToStaticVariables();
-
-                in.close();
-                fileIn.close();
-
-                Log.e("launcher", "corpusGlobalDir path : " + CorpusInfo.corpusGlobalDir.getAbsolutePath());
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+            CorpusInfo.loadFromSerializedFile();
         }
     }
 }
