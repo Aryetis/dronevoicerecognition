@@ -59,8 +59,7 @@ public static List<String> commands = new ArrayList<>(); // get this from global
 
     /**** Class variables ****/
     MicWavRecorderHandler mic;
-//    private int curCommandListIndex = 0; // iterator used to iterate over the commandList list
-public int curCommandListIndex = 0; // iterator used to iterate over the commandList list
+    private int curCommandListIndex = 0; // iterator used to iterate over the commandList list
     private boolean recordingState = false;
 
     /**** UI accessors variables ****/
@@ -177,8 +176,6 @@ commands.add("test3");
     {   // iterate to the next command to be recorded listed in commands's List
         ++curCommandListIndex;
         updateActivity();
-//        WavStreamHandler.chibre.notify();
-
     }
 
 

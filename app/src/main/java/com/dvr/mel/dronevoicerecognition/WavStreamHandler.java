@@ -21,9 +21,7 @@ import java.io.RandomAccessFile;
 
 /*****************************************
  * TODO List, what to tackle first:
- *
- *          URGENT STUFF !!!!!
- *          _ fix last file recording only header
+ *          _ fix corrupted audio files
  *
  *
  *          _ Make this class a singleton
@@ -194,7 +192,7 @@ if ( !corpusGlobalDir.exists())
     {
         /**** First silence calibration ****/
         if ( silenceAvgRMSAmp == 0 )
-        {   // if we analyse the first streamBuffer passed by the mic
+        {   // if silenceAvgRMSAmp has'nt been initialized
             // just calibrate the silence value
             silenceAvgRMSAmp = getRMSValue();
             return;
@@ -250,7 +248,7 @@ if ( !corpusGlobalDir.exists())
             }
 
             // Set next file Output
-                commandName = micHandler.uiActivity.getCurrentCommandName(); // get new Command name
+            commandName = micHandler.uiActivity.getCurrentCommandName(); // get new Command name
 
             if ( commandName != null ) // getCurrentCommandName() returns null if going OOB / reaching the end of the List
                 // if Activity successfully switched to the next Command to record in the list
@@ -326,12 +324,14 @@ if ( !corpusGlobalDir.exists())
     {
         // Set the output file of the Audio stream
         // Note : ".wav" extension should be added at the call of the method
+        boolean returnValue=true;
+
         try
         {
             // create command's File
             commandFile = new File(corpusDir, outputFileName);
             if ( !commandFile.exists() )
-                return commandFile.createNewFile();
+                returnValue = commandFile.createNewFile();
 
             // create FileOutputStream
             fos = new FileOutputStream(commandFile, false); //overWrite the file if it exists
@@ -346,24 +346,24 @@ if ( !corpusGlobalDir.exists())
         catch (IOException e)
         { e.printStackTrace(); }
 
-        return true;
+        return returnValue;
     }
 
 
 
     private void writeStreamBuffer()
-    {   // Write the current short[] buffer into the file going through a DataOutputStream
+   {   // Write the current short[] buffer into the file going through a DataOutputStream
         // thus there is no need to convert those short into bytes manually
-        try
-        {
+       try
+       {
             for (short s : streamBuffer)
             {
                 dos.writeShort(s);
                 audioLength += bufferSize*2; // we insert "bufferSize amount of short" <=> "2*bufferSize bytes"
             }
-            dos.flush(); // TODO not sure if that's necessary, close() should be called at the end and thus also flush()
-        } catch (IOException ie) { ie.printStackTrace(); }
-    }
+            dos.flush(); // flush current buffer into fos=>file
+       } catch (IOException ie) { ie.printStackTrace(); }
+   }
 
 
 
