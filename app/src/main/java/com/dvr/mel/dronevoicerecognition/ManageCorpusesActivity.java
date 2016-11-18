@@ -62,7 +62,8 @@ public class ManageCorpusesActivity extends AppCompatActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
                 final int finalpos = position;
-                final Corpus corpusObject = ((Corpus)CorpusInfo.corpusMap.get(position));
+                final String secureName = CorpusInfo.usersCorpora.get(position);
+                final Corpus corpusObject = CorpusInfo.corpusMap.get(secureName);
                 ((RoundedLetterView)holder.itemView.findViewById(R.id.rlv_rlv)).setTitleText("C"+position);
                 ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(corpusObject.getDisplayName());
                 holder.itemView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
@@ -70,7 +71,7 @@ public class ManageCorpusesActivity extends AppCompatActivity {
                     public void onCreateContextMenu(ContextMenu contextMenu, final View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
 
                         contextMenu.setHeaderTitle("Select an action");
-                        if(corpusObject.isReference())
+                        if(CorpusInfo.referencesCorpora.contains(secureName))
                             contextMenu.add(0, finalpos, 0, "Unset reference");
                         else
                             contextMenu.add(0, finalpos, 0, "Set as reference");
