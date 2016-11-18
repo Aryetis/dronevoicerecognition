@@ -31,7 +31,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.dvr.mel.dronevoicerecognition.MainMenuActivity" />
         </activity>
-        <activity android:name=".finalCorpus" />
+        <activity android:name=".FinalCorpusActivity" />
     </application>
 
 

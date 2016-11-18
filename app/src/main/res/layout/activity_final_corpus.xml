@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.dvr.mel.dronevoicerecognition.finalCorpus">
+    tools:context="com.dvr.mel.dronevoicerecognition.FinalCorpusActivity">
 
     <TextView
         android:text="Nouveaux corpus enregistré"
@@ -50,4 +50,26 @@
         android:layout_above="@+id/progressBar"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="94dp" />
+
+    <Button
+        android:text="X"
+        android:textColor="@color/colorRedAccent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:id="@+id/corpusFail"
+        android:onClick="corpusFailHandler"
+        android:layout_alignBottom="@+id/progressBar"
+        android:layout_toStartOf="@+id/label" />
+
+    <Button
+        android:text="V"
+        android:textColor="@color/green"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/corpusPass"
+        android:onClick="corpusPassHandler"
+        android:layout_alignBaseline="@+id/corpusFail"
+        android:layout_alignBottom="@+id/corpusFail"
+        android:layout_toEndOf="@+id/label" />
 </RelativeLayout>
