@@ -59,4 +59,11 @@ class Corpus implements Serializable{
         CorpusInfo.referencesCorpora.add(this.getName());
     }
 
+    public void unsetReference() {
+        // Self is now a reference
+        this.mReference = false;
+        // Self is to be added to the set of corpora
+        CorpusInfo.referencesCorpora.remove(this.getName());
+    }
+
 }
