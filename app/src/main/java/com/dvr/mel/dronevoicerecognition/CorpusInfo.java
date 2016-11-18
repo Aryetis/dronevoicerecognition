@@ -2,6 +2,7 @@ package com.dvr.mel.dronevoicerecognition;
 
 import java.io.File;
 import java.io.Serializable;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,5 +54,17 @@ public class CorpusInfo implements Serializable{
     public static void addCorpus(String name, Corpus corpus) {
         usersCorpora.add(name);
         corpusMap.put(name, corpus);
+    }
+
+    public static String sanitarizeName(String name){
+        name = name.replace(' ', '_');
+        name = name.toLowerCase();
+
+        StringBuilder sb = new StringBuilder(name.length());
+        name = Normalizer.normalize(name, Normalizer.Form.NFD);
+        for (char c : name.toCharArray()) {
+            if (c <= '\u007F') sb.append(c);
+        }
+        return sb.toString();
     }
 }
