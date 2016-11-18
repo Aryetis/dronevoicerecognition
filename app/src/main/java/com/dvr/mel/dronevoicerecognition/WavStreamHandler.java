@@ -3,6 +3,7 @@ package com.dvr.mel.dronevoicerecognition;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.media.AudioFormat;
+import android.util.Log;
 // Stream specific imports
 import java.io.DataOutputStream;
 import java.io.File;
@@ -107,8 +108,7 @@ class WavStreamHandler extends Thread
 
         // Initializing intern variables
         bufferSize = micHandler.bufferSize;
-        streamBuffer = new short[bufferSize];
-//        byteStreamBuffer = new byte[bufferSize*2];
+        streamBuffer = new short[bufferSize/2];   //TODO HARD CODED TO SUPPORT 16 bits => make it dynamic based on ENCODING_FORMAT
 
 // TODO DEBUG \/ to be removed and use Global Variables after merging
 // get Application's Context
@@ -287,7 +287,7 @@ if ( !corpusGlobalDir.exists())
         for( short s : streamBuffer )
             rmsVal+=s*s;
 
-        return Math.sqrt(rmsVal/bufferSize);
+        return Math.sqrt(rmsVal/(bufferSize/2));  //TODO HARD CODED TO SUPPORT 16 bits => make it dynamic based on ENCODING_FORMAT
     }
 
 
@@ -356,7 +356,8 @@ if ( !corpusGlobalDir.exists())
 
        // update audioLength
        // we're inserting a bufferSize of [bufferSize] short <=> 2*[bufferSize] bytes
-       audioLength += bufferSize*2;
+       audioLength += bufferSize; //audioLength <=> side in byte of actual PCM audio data ; bufferSize <=> size in byte of streamBuffer / NOT number of element in streamBuffer
+
        try
        {
             for (short s : streamBuffer)

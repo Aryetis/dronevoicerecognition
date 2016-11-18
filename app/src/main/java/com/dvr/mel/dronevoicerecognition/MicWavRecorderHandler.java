@@ -3,6 +3,7 @@ package com.dvr.mel.dronevoicerecognition;
 // AudioRecord imports
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.util.Log;
 // StreamBuffer Queue imports
 import java.util.LinkedList;
 import java.util.Queue;
@@ -48,6 +49,7 @@ class MicWavRecorderHandler extends Thread
      *                                                 *
      ***************************************************/
 
+
     /**** Singleton and lock insurance ****/
     //MicWavRecorderHandler singletonInstance; //TODO when got time
     final Object lock = new Object(); // shared lock with WavStreamHandler for "producer/consumer" problem resolution
@@ -69,7 +71,7 @@ class MicWavRecorderHandler extends Thread
     /**** Audio associated variables ****/
     private AudioRecord mic; // "Mic Audio Input" Object
     private short[] streamBuffer; // buffer used to constantly listen to the mic
-    int bufferSize; // size of following buffers
+    int bufferSize; // size of following buffers IN BYTE
     Queue<short[]> streamBufferQueue; // streamBuffer filled are pushed onto this Queue, waiting for their treatment
 
     /**** MicWavRecorder's lifespan variable ****/
@@ -114,7 +116,7 @@ class MicWavRecorderHandler extends Thread
         streamBufferQueue = new LinkedList<>();
 
         // Initializing buffers
-        streamBuffer = new short[bufferSize];
+        streamBuffer = new short[bufferSize/2];  //TODO HARD CODED TO SUPPORT 16 bits => make it dynamic based on ENCODING_FORMAT
 
         // Link current MivWavRecorder's thread to its MicActivity's thread
         uiActivity = uiActivity_;
@@ -155,13 +157,14 @@ class MicWavRecorderHandler extends Thread
     @Override
     public void run()
     {
+
         // Basic Producer(MicWavRecorderHandler) and Consumer(WavStreamHandler) problem
 
         while(runningState)
         {
             // update streamBuffer / produce a streamBuffer
-            mic.read(streamBuffer, 0, bufferSize); // read() IS A BLOCKING METHOD !!!
-                                                   // it will wait for the buffer to be filled before returning it
+            mic.read(streamBuffer, 0, bufferSize/2);// read() IS A BLOCKING METHOD !!!  //TODO HARD CODED TO SUPPORT 16 bits => make it dynamic based on ENCODING_FORMAT
+                                                  // it will wait for the buffer to be filled before returning it
 
             synchronized(lock) // CRITICAL SECTION : synchronize on the same lock with Consumer
             {
