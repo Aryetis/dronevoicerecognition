@@ -57,7 +57,7 @@ public class CorpusInfo implements Serializable{
     }
 
     public static String sanitarizeName(String name){
-        name = name.replace(' ', '_');
+        name = name.replace(' ', '_').replace('*', '_');
         name = name.toLowerCase();
 
         StringBuilder sb = new StringBuilder(name.length());
