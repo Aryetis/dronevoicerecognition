@@ -9,6 +9,7 @@ import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -65,42 +66,39 @@ public class LauncherActivity extends AppCompatActivity {
         // getApplication's context
         ContextWrapper cw = new ContextWrapper(this.getApplicationContext());
 
-        // set some references with CorpusInfo
-        File baseDir = CorpusInfo.baseDir;
-        File corpusGlobalDir = CorpusInfo.corpusGlobalDir;
-        List<String> commands = CorpusInfo.commands;
-
         // build tree directory if needed
         // get the base dir for all date linked to our application
-        baseDir = cw.getDir("data", Context.MODE_PRIVATE);
+        CorpusInfo.baseDir = cw.getDir("data", Context.MODE_PRIVATE);
         // <=> /DATA/DATA/com.dvr.mel.dronevoicerecognition/app_data   (yes it prefixes with "app_")
 
         // check if the file corpusInfoSaved exist (serialized)
-        File corpusInfoSave = new File(baseDir, "corpusInfoSaved");
+        File corpusInfoSave = new File(CorpusInfo.baseDir, "corpusInfoSaved");
 
         // it doesn't exist
-        if (!corpusInfoSave.exists()) {
+        if ( ! corpusInfoSave.exists() ) {
+            Log.e("launcher", "le fichier serialisé n'existe pas");
 
             // let's create a sufolder for stocking all of our Corpora
-            corpusGlobalDir = new File(baseDir, "Corpus");
-            if (!corpusGlobalDir.exists())
-                corpusGlobalDir.mkdir();
+            CorpusInfo.corpusGlobalDir = new File(CorpusInfo.baseDir, "Corpus");
+            if ( ! CorpusInfo.corpusGlobalDir.exists())
+                CorpusInfo.corpusGlobalDir.mkdir();
             // <=> /DATA/DATA/com.dvr.mel.dronevoicerecognition/app_data/Corpus
 
             // .... commands
-            commands.add("avance");
-            commands.add("recule");
-            commands.add("droite");
-            commands.add("gauche");
-            commands.add("etatdurgence");
-            commands.add("tournedroite");
-            commands.add("tournegauche");
-            commands.add("faisunflip");
-            commands.add("arretetoi");
+            CorpusInfo.commands.add("avance");
+            CorpusInfo.commands.add("recule");
+            CorpusInfo.commands.add("droite");
+            CorpusInfo.commands.add("gauche");
+            CorpusInfo.commands.add("etatdurgence");
+            CorpusInfo.commands.add("tournedroite");
+            CorpusInfo.commands.add("tournegauche");
+            CorpusInfo.commands.add("faisunflip");
+            CorpusInfo.commands.add("arretetoi");
 
             // save the file
             try {
                 CorpusInfo ci = new CorpusInfo();
+                ci.updateFromStaticVariables();
 
                 FileOutputStream fileOut = new FileOutputStream(corpusInfoSave.getAbsolutePath());
                 ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -120,6 +118,7 @@ public class LauncherActivity extends AppCompatActivity {
 
         // it exist
         else {
+            Log.e("launcher", "le fichier serialisé existe");
             try {
                 CorpusInfo ci = new CorpusInfo();
 
@@ -127,18 +126,12 @@ public class LauncherActivity extends AppCompatActivity {
                 ObjectInputStream in = new ObjectInputStream(fileIn);
 
                 ci = (CorpusInfo) in.readObject();
+                ci.updateToStaticVariables();
 
                 in.close();
                 fileIn.close();
 
-
-                // update static variables
-                CorpusInfo.referencesCorpora = ci._referencesCorpora;
-                CorpusInfo.usersCorpora = ci._usersCorpora;
-                CorpusInfo.baseDir = ci._baseDir;
-                CorpusInfo.corpusGlobalDir = ci._corpusGlobalDir;
-                CorpusInfo.corpusMap = ci._corpusMap;
-                CorpusInfo.commands = ci._commands;
+                Log.e("launcher", "corpusGlobalDir path : " + CorpusInfo.corpusGlobalDir.getAbsolutePath());
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

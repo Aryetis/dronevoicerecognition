@@ -1,5 +1,7 @@
 package com.dvr.mel.dronevoicerecognition;
 
+import android.util.ArrayMap;
+
 import java.io.File;
 import java.io.Serializable;
 import java.text.Normalizer;
@@ -14,28 +16,19 @@ import java.util.Map;
 
 public class CorpusInfo implements Serializable{
     public static File baseDir, corpusGlobalDir;
-    public static File wordTestingDir;
     public static List<String> referencesCorpora = new ArrayList<>();
     public static List<String> usersCorpora = new ArrayList<>();
     public static List<String> commands = new ArrayList<>();
     public static Map<String, Corpus> corpusMap = new HashMap<>();
 
     public File _baseDir, _corpusGlobalDir;
-    public File _wordTestingDir;
     public List<String> _referencesCorpora = new ArrayList<>();
     public List<String> _usersCorpora = new ArrayList<>();
     public List<String> _commands = new ArrayList<>();
     public Map<String, Corpus> _corpusMap = new HashMap<>();
 
 
-    public CorpusInfo() {
-        _baseDir = baseDir;
-        _corpusGlobalDir = corpusGlobalDir;
-        _wordTestingDir = wordTestingDir;
-        _referencesCorpora = referencesCorpora;
-        _usersCorpora = usersCorpora;
-        _commands = commands;
-    }
+    public CorpusInfo() {    }
 
     public static void clean(String corpusName) {
         // Delete all files related to the corpus designed by corpusName
@@ -66,5 +59,23 @@ public class CorpusInfo implements Serializable{
             if (c <= '\u007F') sb.append(c);
         }
         return sb.toString();
+    }
+
+    public void updateFromStaticVariables() {
+        this._baseDir = new File(baseDir.getAbsolutePath());
+        this._corpusGlobalDir = new File(corpusGlobalDir.getAbsolutePath());
+        this._referencesCorpora = new ArrayList<>(referencesCorpora);
+        this._usersCorpora = new ArrayList<>(usersCorpora);
+        this._commands = new ArrayList<>(commands);
+        this._corpusMap = new HashMap<>(corpusMap);
+    }
+
+    public void updateToStaticVariables() {
+        baseDir = new File(this._baseDir.getAbsolutePath());
+        corpusGlobalDir = new File(this._corpusGlobalDir.getAbsolutePath());
+        referencesCorpora = new ArrayList<>(this._referencesCorpora);
+        usersCorpora = new ArrayList<>(this._usersCorpora);
+        commands = new ArrayList<>(this._commands);
+        corpusMap = new HashMap<>(this._corpusMap);
     }
 }
