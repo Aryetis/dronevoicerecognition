@@ -37,6 +37,7 @@ public class FinalCorpusActivity extends AppCompatActivity {
             middleLabel = (TextView) findViewById(R.id.labelRecognition);
             middleLabel.setText("Aucune références à été définie");
 
+            CorpusInfo.referencesCorpora.add(b.getString("name"));
             CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
         }
 
