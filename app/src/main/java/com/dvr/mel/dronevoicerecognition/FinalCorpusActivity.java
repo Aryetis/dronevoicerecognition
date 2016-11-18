@@ -11,6 +11,7 @@ import android.widget.TextView;
 import org.w3c.dom.Text;
 
 import java.io.File;
+import java.util.List;
 
 public class FinalCorpusActivity extends AppCompatActivity {
     public Bundle b;
@@ -50,7 +51,7 @@ public class FinalCorpusActivity extends AppCompatActivity {
             // TODO : faire le systeme multi locuteur
             float percent = computeRecognitionRatio(
                     CorpusInfo.corpusGlobalDir.getAbsolutePath(),
-                    CorpusInfo.referencesCorpora.get(0),
+                    CorpusInfo.referencesCorpora,
                     b.getString("name"));
 
             middleLabel.setText(Float.toString(percent));
@@ -82,7 +83,7 @@ public class FinalCorpusActivity extends AppCompatActivity {
         progressLabel.setText(newText);
     }
 
-    public native float computeRecognitionRatio(String pathToSDCard, String reference, String hypothese);
+    public native float computeRecognitionRatio(String pathToSDCard, List<String> references, String hypothese);
     static {
         System.loadLibrary("native-lib");
     }
