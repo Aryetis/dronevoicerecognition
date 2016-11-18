@@ -3,7 +3,7 @@ package com.dvr.mel.dronevoicerecognition;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.media.AudioFormat;
-
+// Stream specific imports
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -321,8 +321,7 @@ if ( !corpusGlobalDir.exists())
 
 
     private boolean setOutput(String outputFileName)
-    {
-        // Set the output file of the Audio stream
+    {   // Set the output file of the Audio stream
         // Note : ".wav" extension should be added at the call of the method
         boolean returnValue=true;
 
@@ -354,13 +353,14 @@ if ( !corpusGlobalDir.exists())
     private void writeStreamBuffer()
    {   // Write the current short[] buffer into the file going through a DataOutputStream
         // thus there is no need to convert those short into bytes manually
+
+       // update audioLength
+       // we're inserting a bufferSize of [bufferSize] short <=> 2*[bufferSize] bytes
+       audioLength += bufferSize*2;
        try
        {
             for (short s : streamBuffer)
-            {
                 dos.writeShort(s);
-                audioLength += bufferSize*2; // we insert "bufferSize amount of short" <=> "2*bufferSize bytes"
-            }
             dos.flush(); // flush current buffer into fos=>file
        } catch (IOException ie) { ie.printStackTrace(); }
    }
@@ -391,7 +391,7 @@ if ( !corpusGlobalDir.exists())
 
         // RIFF chunk descriptor
         header[0]='R'; header[1] = 'I'; header[2]='F'; header[3]='F'; // RIFF (start of "RIFF" chunk descriptor)
-        // RIFF => use little-endian notation
+        // RIFF => use little-endian notation for non ascii stuff
         header[4]=(byte) (dataAndSubHeaderSize & 0xff); header[5]=(byte) ((dataAndSubHeaderSize >> 8) & 0xff);
         header[6]=(byte) ((dataAndSubHeaderSize >> 16) & 0xff); header[7]=(byte) ((dataAndSubHeaderSize >> 24) & 0xff);
         // (file Size-8)
@@ -422,6 +422,9 @@ if ( !corpusGlobalDir.exists())
             rafOut.write(header);
         }
         catch ( Exception e ) { e.printStackTrace(); }
+
+        // Reset file specific variables
+        audioLength = 0;
     }
 
 
