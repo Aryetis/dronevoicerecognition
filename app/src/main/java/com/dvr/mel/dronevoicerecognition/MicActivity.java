@@ -274,7 +274,7 @@ System.exit(0);
         mic.close();
 //TODO  \/ to replace with correct Load()
         Log.i("MicActivity", "goToNextActivity");
-        Intent intent = new Intent(this, finalCorpus.class);
+        Intent intent = new Intent(this, FinalCorpusActivity.class);
         intent.putExtra("name", getIntent().getStringExtra("name"));
         intent.putExtra("corpus", getIntent().getSerializableExtra("corpus"));
         startActivity(intent);
