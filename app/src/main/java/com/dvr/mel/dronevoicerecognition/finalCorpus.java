@@ -21,7 +21,7 @@ public class finalCorpus extends AppCompatActivity {
 
         // get all the parameters
         b = getIntent().getExtras();
-        String corpusName = b.getString("corpusName");
+        String corpusName = b.getString("name");
         //String corpusName = stringFromJNI();
 
         // change the first textView

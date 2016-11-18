@@ -4,6 +4,7 @@ package com.dvr.mel.dronevoicerecognition;
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.media.AudioFormat;
 import android.os.Bundle;
 import android.util.Log;
@@ -268,15 +269,14 @@ System.exit(0);
 
 
 
-    private void goToNextActivity()
-    {
+    private void goToNextActivity() {
         // close & clean mic (File, outputStreap, thread, etc)
         mic.close();
 //TODO  \/ to replace with correct Load()
-Log.i("MicActivity", "goToNextActivity");
-try { Thread.sleep(2000); } catch (InterruptedException e) {e.printStackTrace(); }
-System.exit(0);
+        Log.i("MicActivity", "goToNextActivity");
+        Intent intent = new Intent(this, finalCorpus.class);
+        intent.putExtra("name", getIntent().getStringExtra("name"));
+        intent.putExtra("corpus", getIntent().getSerializableExtra("corpus"));
+        startActivity(intent);
     }
-
-
 }
