@@ -8,46 +8,44 @@ import java.io.Serializable;
  */
 
 class Corpus implements Serializable{
-    private static Corpus _lastReference = null;
-
     private String mName;
-    private String mDescription;
+    private String mDisplayName;
     private boolean mReference = false;
-    private boolean mHasDescription = false;
+    private boolean mHasDisplayName = false;
 
 
-    public Corpus(String name, String description){
+    public Corpus(String name, String displayName){
         this.mName = name;
-        this.mDescription = description;
-        mHasDescription = !mDescription.isEmpty();
+        this.mDisplayName = displayName;
+        mHasDisplayName = !mDisplayName.isEmpty();
         // If first ever created it is the reference
-        if(_lastReference == null) this.setAsReference();
+        if(CorpusInfo.referencesCorpora.isEmpty()) this.setAsReference();
     }
 
     public Corpus(String name)
     {
         this.mName = name;
-        this.mDescription = "";
-        this.mHasDescription = false;
+        this.mDisplayName = name;
+        this.mHasDisplayName = false;
         // If first ever created it is the reference
-        if(_lastReference == null) this.setAsReference();
+        if(CorpusInfo.referencesCorpora.isEmpty()) this.setAsReference();
     }
 
     public String getName() {
         return mName;
     }
 
-    public String getDescription() {
-        return mDescription;
+    public String getDisplayName() {
+        return mDisplayName;
     }
 
-    public void setDescription(String description) {
-        this.mDescription = description;
-        mHasDescription = !description.isEmpty();
+    public void setDisplayName(String displayName) {
+        this.mDisplayName = displayName;
+        mHasDisplayName = !displayName.isEmpty();
     }
 
-    public boolean hasDescription() {
-        return mHasDescription;
+    public boolean hasDisplayName() {
+        return mHasDisplayName;
     }
 
     public boolean isReference(){
@@ -55,14 +53,10 @@ class Corpus implements Serializable{
     }
 
     public void setAsReference() {
-        // If there is another reference
-        if (_lastReference != null)
-            // Last is not reference anymore
-            _lastReference.mReference = false;
         // Self is now a reference
         this.mReference = true;
-        // Self is the last reference
-        _lastReference = this;
+        // Self is to be added to the set of corpora
+        CorpusInfo.referencesCorpora.add(this.getName());
     }
 
 }
