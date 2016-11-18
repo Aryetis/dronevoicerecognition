@@ -3,7 +3,6 @@ package com.dvr.mel.dronevoicerecognition;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.media.AudioFormat;
-import android.util.Log;
 // Stream specific imports
 import java.io.DataOutputStream;
 import java.io.File;
@@ -54,7 +53,8 @@ class WavStreamHandler extends Thread
                                       // => Tweak it if the recording starts "randomly" or user needs to yell at the mic
                                       // TODO : allow user to modify this value in some "OptionActivity"
     private double silenceAvgRMSAmp = 0; // silence's average amplitude
-    private int bufferSize; // bufferSize = micHandler.bufferSize;  yes it's redundant but more clear that way
+    private int bufferSizeByte; // bufferSizeByte = micHandler.bufferSizeByte; // size of following buffers IN BYTE
+    private int bufferSizeElmt; // bufferSizeElmt = micHandler.bufferSizeElmt; // number of Element per buffer
     static private short[] streamBuffer; // copy of a queued streamBuffer, because we don't want to
                                          // hold the producer's thread in hostage during our computing process
                                          // basic "Producer/Consumer" protocol stuff
@@ -107,8 +107,9 @@ class WavStreamHandler extends Thread
         micHandler = micHandler_;
 
         // Initializing intern variables
-        bufferSize = micHandler.bufferSize;
-        streamBuffer = new short[bufferSize/2];   //TODO HARD CODED TO SUPPORT 16 bits => make it dynamic based on ENCODING_FORMAT
+        bufferSizeByte = micHandler.bufferSizeByte;
+        bufferSizeElmt = micHandler.bufferSizeElmt;
+        streamBuffer = new short[bufferSizeElmt];
 
 // TODO DEBUG \/ to be removed and use Global Variables after merging
 // get Application's Context
@@ -287,7 +288,7 @@ if ( !corpusGlobalDir.exists())
         for( short s : streamBuffer )
             rmsVal+=s*s;
 
-        return Math.sqrt(rmsVal/(bufferSize/2));  //TODO HARD CODED TO SUPPORT 16 bits => make it dynamic based on ENCODING_FORMAT
+        return Math.sqrt(rmsVal/(bufferSizeElmt));
     }
 
 
@@ -355,9 +356,8 @@ if ( !corpusGlobalDir.exists())
         // thus there is no need to convert those short into bytes manually
 
        // update audioLength
-       // we're inserting a bufferSize of [bufferSize] short <=> 2*[bufferSize] bytes
-       audioLength += bufferSize; //audioLength <=> side in byte of actual PCM audio data ; bufferSize <=> size in byte of streamBuffer / NOT number of element in streamBuffer
-
+       audioLength += bufferSizeByte; // audioLength <=> side in byte of actual PCM audio data ;
+                                      // bufferSizeByte <=> size in byte of streamBuffer / NOT number of element in streamBuffer
        try
        {
             for (short s : streamBuffer)

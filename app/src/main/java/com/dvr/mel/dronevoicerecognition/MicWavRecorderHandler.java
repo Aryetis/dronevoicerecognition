@@ -1,6 +1,7 @@
 package com.dvr.mel.dronevoicerecognition;
 
 // AudioRecord imports
+import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
@@ -16,11 +17,17 @@ import java.util.Queue;
  *        based on "Producer/Consumer" Algorithm                                                  *
  *      _                                                                                         *
  *                                                                                                *
- * Limitations : don't try to use multiple MicWavRecorders at the same time... Just don't, ok ... *
- *               this class is implementing singleton design pattern anyway, so go crazy...try it *
- *               That wouldn't make sense anyway to grab (and modify) mic input buffer            *
- *               from multiple MicWavRecorder threads anyways,                                    *
- *               and concurrent mic input accesses is also prohibited by Android anyways, so ...  *
+ * Limitations: _ don't try to use multiple MicWavRecorders at the same time... Just don't, ok... *
+ *                this class is implementing singleton design pattern anyway, so go crazy...      *
+ *                That wouldn't make sense anyway to grab (and modify) mic input buffer           *
+ *                from multiple MicWavRecorder threads anyways,                                   *
+ *                and concurrent mic input accesses is also prohibited by Android anyways, so ... *
+ *              _ Supporting only 16 bits Encoding format at the moment                           *
+ *                GetMinBufferSize doesn't work with 8 bits, and 32 bits would require switch     *
+ *                rewriting the streamBuffer and all subsequent code,                             *
+ *                mainly adapting it to float support ... Not gonna happens ... No thanks         *
+ *                When google fix their sh*** and enable 8bits supports,                          *
+ *                then I'll come back for 32 bits. Your move creep                                *
  *************************************************************************************************/
 
 /*****************************************
@@ -62,7 +69,7 @@ class MicWavRecorderHandler extends Thread
                                                        // May need some empirical tweaking if for instance
                                                        // the recording trigger itself over a really short but loud Audio burst
     /**** Associated threads ****/
-    MicActivity uiActivity; // Activity "linked to"/"which started" this MicWavRecorder //TODO maybe switch to private afterwards
+    MicActivity uiActivity; // Activity "linked to"/"which started" this MicWavRecorder //TODO maybe switch to private afterwards and static access to variables
     private WavStreamHandler audioAnalyser;
                                   // used to analyse mic's input buffer without blocking
                                   // this thread from filling it. ("Producer, Consumer" problem)
@@ -71,7 +78,8 @@ class MicWavRecorderHandler extends Thread
     /**** Audio associated variables ****/
     private AudioRecord mic; // "Mic Audio Input" Object
     private short[] streamBuffer; // buffer used to constantly listen to the mic
-    int bufferSize; // size of following buffers IN BYTE
+    int bufferSizeByte; // size of following buffers IN BYTE
+    int bufferSizeElmt; // number of Element per buffer
     Queue<short[]> streamBufferQueue; // streamBuffer filled are pushed onto this Queue, waiting for their treatment
 
     /**** MicWavRecorder's lifespan variable ****/
@@ -101,12 +109,18 @@ class MicWavRecorderHandler extends Thread
         ENCODING_FORMAT = ENCODING_FORMAT_;
 
         //Microphone Initialization
-        bufferSize = BUFFER_SIZE_MULTIPLICATOR*AudioRecord.getMinBufferSize((int)SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
+        bufferSizeByte = BUFFER_SIZE_MULTIPLICATOR*AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
                     // value expressed in bytes
                     // using 10 times the getMinBufferSize to avoid IO operations and reduce a bad "producer / consumer" case's probabilities
+        switch (ENCODING_FORMAT)
+        {
+            case AudioFormat.ENCODING_PCM_8BIT : { bufferSizeElmt = bufferSizeByte; break; }
+            case AudioFormat.ENCODING_PCM_16BIT : { bufferSizeElmt = bufferSizeByte / 2; break; }
+            default : { throw new MicWavRecorderHandlerException("Unsupported ENCODING_FORMAT"); }
+        }
         mic = new AudioRecord( MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE, CHANNEL_MODE,
-                ENCODING_FORMAT, bufferSize );
+                ENCODING_FORMAT, bufferSizeByte );
                 // mic always on, completing a non-circular buffer
                 // use audioAnalyser (WavStreamHandler) to detect if buffer is relevant or not
                 //     <=> if phone is recording silence or not.
@@ -116,7 +130,7 @@ class MicWavRecorderHandler extends Thread
         streamBufferQueue = new LinkedList<>();
 
         // Initializing buffers
-        streamBuffer = new short[bufferSize/2];  //TODO HARD CODED TO SUPPORT 16 bits => make it dynamic based on ENCODING_FORMAT
+        streamBuffer = new short[bufferSizeElmt];
 
         // Link current MivWavRecorder's thread to its MicActivity's thread
         uiActivity = uiActivity_;
@@ -163,8 +177,8 @@ class MicWavRecorderHandler extends Thread
         while(runningState)
         {
             // update streamBuffer / produce a streamBuffer
-            mic.read(streamBuffer, 0, bufferSize/2);// read() IS A BLOCKING METHOD !!!  //TODO HARD CODED TO SUPPORT 16 bits => make it dynamic based on ENCODING_FORMAT
-                                                  // it will wait for the buffer to be filled before returning it
+            mic.read(streamBuffer, 0, bufferSizeElmt);// read() IS A BLOCKING METHOD !!!
+                                                      // it will wait for the buffer to be filled before returning it
 
             synchronized(lock) // CRITICAL SECTION : synchronize on the same lock with Consumer
             {
