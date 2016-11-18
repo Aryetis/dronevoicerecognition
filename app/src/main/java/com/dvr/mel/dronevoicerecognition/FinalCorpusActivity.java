@@ -10,7 +10,7 @@ import org.w3c.dom.Text;
 
 import java.io.File;
 
-public class finalCorpus extends AppCompatActivity {
+public class FinalCorpusActivity extends AppCompatActivity {
     public Bundle b;
 
     @Override
@@ -33,15 +33,21 @@ public class finalCorpus extends AppCompatActivity {
         // no - put a message that there is no references yet to compare with
         TextView middleLabel = (TextView) findViewById(R.id.labelRecognition);
 
-        //CorpusInfo.referencesCorpora.add("M01");    // test
         if (CorpusInfo.referencesCorpora.isEmpty()) {
             middleLabel = (TextView) findViewById(R.id.labelRecognition);
             middleLabel.setText("Aucune références à été définie");
+
+            CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
         }
 
         // yes - run the recognition code true all the references and display the succes percent
         else {
-            float percent = computeRecognitionRatio(CorpusInfo.corpusGlobalDir.getAbsolutePath(), "M01", "M02");
+            // TODO : faire le systeme multi locuteur
+            float percent = computeRecognitionRatio(
+                    CorpusInfo.corpusGlobalDir.getAbsolutePath(),
+                    CorpusInfo.referencesCorpora.get(0),
+                    b.getString("name"));
+
             middleLabel.setText(Float.toString(percent));
         }
     }
