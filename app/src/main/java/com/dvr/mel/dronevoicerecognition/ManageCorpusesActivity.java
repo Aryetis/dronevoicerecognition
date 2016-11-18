@@ -2,6 +2,7 @@ package com.dvr.mel.dronevoicerecognition;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -39,11 +40,6 @@ public class ManageCorpusesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_corpuses);
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        staticMockList.add("Homme Réference");
-        staticMockList.add("Femme Réference");
-        userMockList.add("Placeholder");
-
 
        /*
         * STATIC RECYCLER VIEW LIST
@@ -197,7 +193,19 @@ public class ManageCorpusesActivity extends AppCompatActivity {
                 EditText nameEditText =
                         (EditText)((AlertDialog)dialog).findViewById(R.id.newCorpusNameEditText);
                 String name = (nameEditText != null ? nameEditText.getText().toString().trim() : "");
+
+                /*EditText descriptionEditText =
+                        (EditText)((AlertDialog)dialog).findViewById(R.id.newCorpusDescritpionEditText);
+                String description = (nameEditText != null ? descriptionEditText.getText().toString().trim() : "");*/
                 if (!name.isEmpty()) {
+                    Intent intentToCreateCorpus = new Intent(context, MicActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("name", name); // TODO sanitarize name
+                    bundle.putSerializable("corpus", new Corpus(name));
+                    //bundle.putSerializable("corpus", new Corpus(name, description));
+                    startActivity(intentToCreateCorpus, bundle);
+
+                    Toast.makeText(context, "Add executed now!", Toast.LENGTH_SHORT).show();
                     userMockList.add(name);
                     userAdapter.notifyDataSetChanged();
                 }
