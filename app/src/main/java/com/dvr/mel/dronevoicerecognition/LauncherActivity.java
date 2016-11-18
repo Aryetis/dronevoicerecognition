@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -129,6 +130,15 @@ public class LauncherActivity extends AppCompatActivity {
 
                 in.close();
                 fileIn.close();
+
+
+                // update static variables
+                CorpusInfo.referencesCorpora = ci._referencesCorpora;
+                CorpusInfo.usersCorpora = ci._usersCorpora;
+                CorpusInfo.baseDir = ci._baseDir;
+                CorpusInfo.corpusGlobalDir = ci._corpusGlobalDir;
+                CorpusInfo.corpusMap = ci._corpusMap;
+                CorpusInfo.commands = ci._commands;
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
