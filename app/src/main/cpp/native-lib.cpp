@@ -66,7 +66,10 @@ Java_com_dvr_mel_dronevoicerecognition_FinalCorpusActivity_computeRecognitionRat
     }
 
     // lancement de l'algorithme sur toutes les references -----------------------------------------
-    Matrix<int> confusion(vocabulaires.size(), vocabulaires.size());
+    std::vector<std::string> vocabulary = { "avance", "recule", "droite", "gauche",
+                                            "etatdurgence", "tournedroite", "tournegauche",
+                                            "faisunflip", "arretetoi" };
+    Matrix<int> confusion(vocabulary.size(), vocabulary.size());
 
     for (int i = 0; i < v_references.size(); ++i) {
         Matrix<int> tmp = computeRecognitionOne(s_pathToSDCard, v_references[i], s_hypothese);
@@ -104,10 +107,14 @@ Matrix<int> computeRecognitionOne(  std::string sdc, std::string ref,
     int i = 0, j = 0;
     float distance = 0, mini = FLT_MAX;
 
-    Matrix<int> confusion(vocabulaires.size(), vocabulaires.size());
+    std::vector<std::string> vocabulary = { "avance", "recule", "droite", "gauche",
+                                            "etatdurgence", "tournedroite", "tournegauche",
+                                            "faisunflip", "arretetoi" };
+
+    Matrix<int> confusion(vocabulary.size(), vocabulary.size());
 
     // 1 - Paramétrisation de tout les mots de l'hypothèse et de la références
-    for (std::string word:vocabulaires) {
+    for (std::string word:vocabulary) {
         references[word] = parametrisation( buildPath(sdc, ref, word) );
         hypotheses[word] = parametrisation( buildPath(sdc, hyp, word) );
     }
