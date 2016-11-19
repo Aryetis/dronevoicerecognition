@@ -2,20 +2,15 @@ package com.dvr.mel.dronevoicerecognition;
 
 // UI imports
 import android.app.Activity;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 // Corpus management imports
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 
 
@@ -36,12 +31,9 @@ import java.util.List;
  *    Thus RErecording an already existing corpus will erase it regardless if the user            *
  *    complete the second corpus recording session or not !!!!                                    *
  *                                                                                                *
+ *   Author : https://github.com/Aryetis                                                          *
  **************************************************************************************************/
 
-/*****************************************
- * TODO List, what to tackle first:
- *      _ merge + introduce intente and global variable
- */
 
 
 public class MicActivity extends Activity
@@ -53,10 +45,8 @@ public class MicActivity extends Activity
      ***************************************************/
 
     /**** Global variables ****/
-// TODO declare those \/ elsewhere when merging projects
-public static String corpusName="DEBUG"; // get this from intent
-public static List<String> commands = new ArrayList<>(); // get this from global variable
-// TODO declare those /\ elsewhere when merging projects
+    public static String corpusName; // name of the Corpus to be created
+                                     // (acquire it from Intent created in ManageCorpusActivity)
 
     /**** Class variables ****/
     MicWavRecorderHandler mic;
@@ -101,12 +91,11 @@ public static List<String> commands = new ArrayList<>(); // get this from global
         /*********************************************************/
 
 
+
         /********* Actual Variables initialization *********/
-// TODO initialize those \/ elsewhere when merging projects
-commands.add("test1");
-commands.add("test2");
-commands.add("test3");
-// TODO initialize those /\ elsewhere when merging projects
+
+        // Global variables / Intent's variables initialisation
+        corpusName = getIntent().getExtras().getString("name", "DefaultCorpusName");
 
         // initialize UI accessors
         tv = (TextView) findViewById(R.id.backgroundTextView);
@@ -157,10 +146,10 @@ commands.add("test3");
 
     public String getCurrentCommandName()
     {   // return string containing text of current command being recorded
-        if ( curCommandListIndex >= commands.size() )
+        if ( curCommandListIndex >= CorpusInfo.commands.size() )
             return null; // return null if going OOB
         else
-            return commands.get(curCommandListIndex);
+            return CorpusInfo.commands.get(curCommandListIndex);
     }
 
 
@@ -207,7 +196,7 @@ commands.add("test3");
             }
             default:
             {
-                if ( curCommandListIndex >= commands.size() )
+                if ( curCommandListIndex >= CorpusInfo.commands.size() )
                 {   // curCommandListIndex is getting out of Bound<=>we reached the end of our commandList
                     recordingCompleted = true;
                     goToNextActivity();
@@ -247,18 +236,8 @@ commands.add("test3");
         // This is not a mic related IO operation so it DOES NOT belong to the "Controller"/MicWavRecorderHandler
         boolean destroySuccess = true;
 
-// TODO DEBUG \/ to be removed and use Global Variables after merging
-// get Application's Context
-ContextWrapper cw = new ContextWrapper(this.getApplicationContext());
-// get Application's data subfolder directory
-File baseDir = cw.getDir("data", Context.MODE_PRIVATE);
-// create Global Corpus subdirectory
-File corpusGlobalDir = new File(baseDir, "Corpus");
-if ( !corpusGlobalDir.exists())
-return true;
-
         // get corpus's specific directory
-        File corpusDir = new File(corpusGlobalDir, corpusName);
+        File corpusDir = new File( CorpusInfo.baseDir, corpusName);
         if (!corpusDir.exists())
             return true;
 
@@ -284,21 +263,21 @@ return true;
 
 
     private void goToPreviousActivity()
-    {   // close & clean mic (File, outputStream, thread, etc)
+    {   // Close & clean mic (File, outputStream, thread, etc)
         mic.close();
-//TODO  \/ to replace with correct Load()
-Log.i("MicActivity", "goToPreviousActivity");
-onDestroy();
-System.exit(0);
+
+        // Load MainMenyActivity
+        Intent intent = new Intent(this, MainMenuActivity.class);
+        startActivity(intent);
     }
 
 
 
     private void goToNextActivity()
-    {   // close & clean mic (File, outputStreap, thread, etc)
+    {   // Close & clean mic (File, outputStream, thread, etc)
         mic.close();
-//TODO  \/ to replace with correct Load()
-        Log.i("MicActivity", "goToNextActivity");
+
+        // Load FinalCorpusActivity
         Intent intent = new Intent(this, FinalCorpusActivity.class);
         intent.putExtra("name", getIntent().getStringExtra("name"));
         intent.putExtra("corpus", getIntent().getSerializableExtra("corpus"));

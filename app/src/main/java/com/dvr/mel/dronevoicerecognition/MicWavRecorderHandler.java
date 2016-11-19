@@ -31,6 +31,8 @@ import java.util.Queue;
  *                mainly adapting it to float support ... Not gonna happens ... No thanks         *
  *                When google fix their sh*** and enable 8bits supports,                          *
  *                then I'll come back for 32 bits. Your move creep                                *
+ *                                                                                                *
+ *   Author : https://github.com/Aryetis                                                          *
  *************************************************************************************************/
 
 

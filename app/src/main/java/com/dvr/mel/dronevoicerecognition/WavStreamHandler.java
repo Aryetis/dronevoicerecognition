@@ -1,7 +1,5 @@
 package com.dvr.mel.dronevoicerecognition;
 
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.media.AudioFormat;
 // Stream specific imports
 import java.io.DataOutputStream;
@@ -17,6 +15,7 @@ import java.io.RandomAccessFile;
  *      _ keep track of a silenceBuffer (for future optimized clean up algorithm)                 *
  *      _ triggers UI update based on mic stream                                                  *
  *                                                                                                *
+ *   Author : https://github.com/Aryetis                                                          *
  *************************************************************************************************/
 
 
@@ -30,7 +29,7 @@ class WavStreamHandler extends Thread
      *                                                 *
      ***************************************************/
 
-    
+
 
     /**** Associated thread ****/
     private MicWavRecorderHandler micHandler;
@@ -97,20 +96,9 @@ class WavStreamHandler extends Thread
         bufferSizeElmt = micHandler.bufferSizeElmt;
         streamBuffer = new short[bufferSizeElmt];
 
-// TODO DEBUG \/ to be removed and use Global Variables after merging
-// get Application's Context
-ContextWrapper cw = new ContextWrapper(this.micHandler.uiActivity.getApplicationContext());
-// get Application's data subfolder directory
-File baseDir = cw.getDir("data", Context.MODE_PRIVATE);
-// create Global Corpus subdirectory
-File corpusGlobalDir = new File(baseDir, "Corpus");
-if ( !corpusGlobalDir.exists())
-   corpusGlobalDir.mkdir();
-
-
         // Set output file and stream
         // create specific corpus's subdirectory
-        corpusDir = new File(corpusGlobalDir, MicActivity.corpusName);
+        corpusDir = new File(CorpusInfo.corpusGlobalDir, MicActivity.corpusName);
         if ( !corpusDir.exists())
             try
             {

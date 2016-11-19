@@ -13,13 +13,13 @@
         android:theme="@style/AppTheme">
 
         <activity android:name=".LauncherActivity">
-        </activity>
-        <activity android:name=".MicActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".MicActivity">
         </activity>
 
         <activity android:name=".MainMenuActivity" />
