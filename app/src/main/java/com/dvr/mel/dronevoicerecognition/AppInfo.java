@@ -35,7 +35,7 @@ public class AppInfo implements Serializable{
     public List<String> _commands = new ArrayList<>();
     public Map<String, Corpus> _corpusMap = new HashMap<>();
     public int _SENSITIVITY;
-    public int _BUFFER_SIZE_MULTIPLICATOR ;
+    public int _BUFFER_SIZE_MULTIPLICATOR;
 
 
     public AppInfo() {    }

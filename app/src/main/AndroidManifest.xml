@@ -29,7 +29,7 @@
         </activity>
         <activity android:name=".FinalCorpusActivity" />
         <activity
-            android:name=".MicCalibration"
+            android:name=".MicCalibrationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_mic_calibration"
             android:parentActivityName=".MainMenuActivity">

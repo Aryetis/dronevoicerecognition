@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -289,12 +290,13 @@ public class MicActivity extends Activity
     {   // Close & clean mic (File, outputStream, thread, etc)
         mic.close();
 
-        // Load FinalCorpusActivity
+        /**** Load FinalCorpusActivity ****/
+        // Create intent
         Intent intent = new Intent(this, FinalCorpusActivity.class);
-
+        // Get Bundle from MainMenuActivity and pass it over
         Bundle b = getIntent().getExtras();
         intent.putExtras(b);
-
+        // Launch activity
         startActivity(intent);
     }
 }

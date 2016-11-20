@@ -1,6 +1,5 @@
 package com.dvr.mel.dronevoicerecognition;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,7 +30,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void startMicCalibrationActivity(View view) {
-        Intent intent = new Intent(this, MicCalibration.class);
+        Intent intent = new Intent(this, MicCalibrationActivity.class);
         startActivity(intent);
     }
 }
