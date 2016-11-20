@@ -8,7 +8,7 @@ import android.widget.SeekBar;
 
 
 /**************************************************************************************************
- *  MicCalibrationActivity in a nutshell:                                                                 *
+ *  MicCalibrationActivity in a nutshell:                                                         *
  *      _ Set/Get AppInfo.SENSITIVITY and AppInfo.BUFFER_SIZE_MULTIPLICATOR                       *
  *                                                                                                *
  *   Author : https://github.com/Aryetis                                                          *
@@ -17,7 +17,7 @@ import android.widget.SeekBar;
 public class MicCalibrationActivity extends Activity
 {
     /**** UI accessors variables ****/
-    // SeekBar minimal values are 0, rule enforced by android. Thus we add 10 to get useful values
+    // SeekBar minimal values are 0, rule enforced by android. Thus we don't use those values as they are
     SeekBar sensitivity_bar; // Min value = 5 ; Max value = 50 => Actual useful value: 45 - SeekBar.value
                              // Need to "invert" value, so the higher the SeekBar is the more sensible the mic is
     SeekBar recording_window_bar; // Min value = 2 ; Max value = 20 => Actual useful value: SeekBar.value + 2

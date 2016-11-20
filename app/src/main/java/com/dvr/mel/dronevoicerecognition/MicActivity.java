@@ -16,10 +16,11 @@ import java.io.File;
 
 /**************************************************************************************************
  *  MicActivity in a nutshell:                                                                    *
- *      _ get corpusName and corpusList from Parent Activity's Intent                             *
- *      _ pass corpusName to child Activity's Intent                                              *
+ *      _ get and pass a Bundle of informations to FinalCorpusActivity                            *
  *      _ Use MicWavRecorderHandler (& WavStreamHandler) to record                                *
- *        a list of Wav audio files according to corpusList                                       *
+ *        a list of Wav audio files according to corpusList variable located in AppInfo           *
+ *      _ Handle deletion/overwriting of files and folder in case of record session cancellation  *
+ *        / app crashes / etc                                                                     *
  *                                                                                                *
  *  Sidenotes :                                                                                   *
  *  _ If it helps, see Mic related Activities as MVC designed activities,                         *

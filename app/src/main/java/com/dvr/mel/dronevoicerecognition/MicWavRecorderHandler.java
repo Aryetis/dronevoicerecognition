@@ -10,20 +10,20 @@ import java.util.Queue;
 
 /**************************************************************************************************
  *  MicWavRecorderHandler in a nutshell:                                                          *
- *      _ Initialize a "Microphone Input Stream" using AudioRecord                                *
+ *      _ Initialize a "Microphone Input Stream" using AudioRecord                                *                                *
+ *      _ Handle creation/destruction of a WavStreamHandler Thread to compute streamBuffers       *
  *      _ fill a Queue of streamBuffer containing Audio stream                                    *
  *      _ notify WavStreamHandler's thread every time a buffer is filled and queued,              *
  *        based on "Producer/Consumer" Algorithm                                                  *
- *      _                                                                                         *
  *                                                                                                *
  * Limitations: _ don't try to use multiple MicWavRecorders at the same time... Just don't, ok... *
  *                That wouldn't make sense anyway to grab (and modify) mic input buffer           *
- *                from multiple MicWavRecorder threads anyways,                                   *
+ *                from multiple MicWavRecorder threads (or something else) anyways,               *
  *                and concurrent mic input accesses is also prohibited by Android anyways, so ... *
  *                I should probably use some "Initialization-on-demand holder" pattern            *
  *                combined with a Initializer function to emulate a Constructor with parameters   *
  *                .... But it just feels really really dirty.                                     *
- *                So for now I'll just assume devs using this classes are clever enough to read   *
+ *                So for now I'll just assume devs using those classes are clever enough to read  *
  *                text box called "Limitations"                                                   *
  *              _ Supporting only 16 bits Encoding format at the moment                           *
  *                GetMinBufferSize doesn't work with 8 bits, and 32 bits would require switch     *
@@ -97,8 +97,7 @@ class MicWavRecorderHandler extends Thread
 
     MicWavRecorderHandler( int SAMPLE_RATE_, int CHANNEL_MODE_, int ENCODING_FORMAT_,
                     MicActivity uiActivity_) throws MicWavRecorderHandlerException
-    {
-        // Initializing "USER DETERMINED VARIABLES"
+    {   // Initializing "USER DETERMINED VARIABLES"
         SAMPLE_RATE = SAMPLE_RATE_;
         CHANNEL_MODE = CHANNEL_MODE_;
         ENCODING_FORMAT = ENCODING_FORMAT_;
@@ -142,8 +141,7 @@ class MicWavRecorderHandler extends Thread
 
 
     void close()
-    {
-        // closing microphone
+    {   // closing microphone
         mic.stop();
         mic.release();
 
@@ -166,9 +164,7 @@ class MicWavRecorderHandler extends Thread
 
     @Override
     public void run()
-    {
-        // Basic Producer(MicWavRecorderHandler) and Consumer(WavStreamHandler) problem
-
+    {   // Basic Producer(MicWavRecorderHandler) and Consumer(WavStreamHandler) problem
         while(runningState)
         {
             // update streamBuffer / produce a streamBuffer
