@@ -291,8 +291,10 @@ public class MicActivity extends Activity
 
         // Load FinalCorpusActivity
         Intent intent = new Intent(this, FinalCorpusActivity.class);
-        intent.putExtra("name", getIntent().getStringExtra("name"));
-        intent.putExtra("corpus", getIntent().getSerializableExtra("corpus"));
+
+        Bundle b = getIntent().getExtras();
+        intent.putExtras(b);
+
         startActivity(intent);
     }
 }
