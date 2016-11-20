@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Drone Voice Recognition</string>
-    <string name="app_name">dronevoicerecognition</string>
 
     <string name="title_activity_mic">MicActivity</string>
     <string name="cancel_recording">Cancel Recording</string>

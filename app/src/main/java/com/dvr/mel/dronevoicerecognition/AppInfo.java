@@ -126,7 +126,7 @@ public class AppInfo implements Serializable{
     public static void saveToSerializedFile() {
         File appInfoSaved = new File(AppInfo.baseDir, "appInfoSaved");
 
-        try {
+        try{
             AppInfo ci = new AppInfo();
             ci.updateFromStaticVariables();
 

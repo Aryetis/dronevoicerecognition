@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -16,7 +15,7 @@ import java.io.File;
 
 
 /**************************************************************************************************
- *  MicActivity in a nutshell:                                                                *
+ *  MicActivity in a nutshell:                                                                    *
  *      _ get corpusName and corpusList from Parent Activity's Intent                             *
  *      _ pass corpusName to child Activity's Intent                                              *
  *      _ Use MicWavRecorderHandler (& WavStreamHandler) to record                                *
@@ -24,10 +23,10 @@ import java.io.File;
  *                                                                                                *
  *  Sidenotes :                                                                                   *
  *  _ If it helps, see Mic related Activities as MVC designed activities,                         *
- *    with MicActivity being the View,                                                        *
+ *    with MicActivity being the View,                                                            *
  *    MicWavRecorderHandler being a model, the middle-man between UI and IO Files related stuff   *
  *    and WavStreamHandler computing the streams (Mic and IO) and sending update signal to        *
- *    the MicActivity/View                                                                    *
+ *    the MicActivity/View                                                                        *
  *  _ When starting a recording session if it is not done till completion no file will be kept.   *
  *    Thus RErecording an already existing corpus will erase it regardless if the user            *
  *    complete the second corpus recording session or not !!!!                                    *

@@ -60,7 +60,7 @@ public class LauncherActivity extends AppCompatActivity {
         // <=> /DATA/DATA/com.dvr.mel.dronevoicerecognition/app_data   (yes it prefixes with "app_")
 
         // check if the file corpusInfoSaved exist (serialized)
-        File appInfoSave = new File(AppInfo.baseDir, "corpusInfoSaved");
+        File appInfoSave = new File(AppInfo.baseDir, "appInfoSaved");
 
         // it doesn't exist
         if ( ! appInfoSave.exists() ) {
