@@ -7,4 +7,8 @@
 
 
     <string name="title_activity_manage_corpuses">Manage Corpuses</string>
+
+    <string name="title_activity_mic_calibration">MicCalibration</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

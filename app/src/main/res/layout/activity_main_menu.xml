@@ -40,5 +40,14 @@
             android:layout_margin="10dp"
             android:textColor="@color/colorAccent" />
 
+        <Button
+            android:text="Mic Calibration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/micCalibrationButton"
+            android:background="@color/colorPrimary"
+            android:textColor="@color/colorAccent"
+            android:layout_margin="10dp" />
+
     </LinearLayout>
 </RelativeLayout>
