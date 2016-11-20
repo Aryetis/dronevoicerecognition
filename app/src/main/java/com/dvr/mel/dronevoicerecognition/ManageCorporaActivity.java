@@ -20,7 +20,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class ManageCorpusesActivity extends AppCompatActivity {
+public class ManageCorporaActivity extends AppCompatActivity {
 
 
     RecyclerView.Adapter adapter;
@@ -36,9 +36,9 @@ public class ManageCorpusesActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTitle("Manage Corpuses");
+        setTitle("Manage Corpora");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_manage_corpuses);
+        setContentView(R.layout.activity_manage_corpora);
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
        /*
@@ -75,7 +75,7 @@ public class ManageCorpusesActivity extends AppCompatActivity {
 
                         contextMenu.setHeaderTitle("Select an action");
                         contextMenu.add(0, finalpos, 0, "Set as reference");
-                        ManageCorpusesActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
+                        ManageCorporaActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
                     }
 
                 });
@@ -89,7 +89,7 @@ public class ManageCorpusesActivity extends AppCompatActivity {
         };
 
         // Get recycler view
-        staticCorpusesRecyclerView = (RecyclerView) findViewById(R.id.corpuses_recyclerview);
+        staticCorpusesRecyclerView = (RecyclerView) findViewById(R.id.corpora_recyclerview);
 
         // Add divider decorator
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(staticCorpusesRecyclerView.getContext(),
@@ -135,7 +135,7 @@ public class ManageCorpusesActivity extends AppCompatActivity {
                         contextMenu.setHeaderTitle("Select an action");
                         contextMenu.add(0, finalpos, 0, "Set as reference");
                         contextMenu.add(0, finalpos, 0, "Remove");
-                        ManageCorpusesActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
+                        ManageCorporaActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
                     }
 
                 });
@@ -150,7 +150,7 @@ public class ManageCorpusesActivity extends AppCompatActivity {
 
 
         // Get recycler view
-        userCorpusesRecyclerView = (RecyclerView) findViewById(R.id.user_corpuses_recyclerview);
+        userCorpusesRecyclerView = (RecyclerView) findViewById(R.id.user_corpora_recyclerview);
 
         // Add same divider decorator
         userCorpusesRecyclerView.addItemDecoration(dividerItemDecoration);

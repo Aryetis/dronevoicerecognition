@@ -24,8 +24,8 @@ public class MainMenuActivity extends AppCompatActivity {
 
     }
 
-    public void startManageCorpusesActivity(View view) {
-        Intent intent = new Intent(this, ManageCorpusesActivity.class);
+    public void startManageCorporaActivity(View view) {
+        Intent intent = new Intent(this, ManageCorporaActivity.class);
         startActivity(intent);
     }
 

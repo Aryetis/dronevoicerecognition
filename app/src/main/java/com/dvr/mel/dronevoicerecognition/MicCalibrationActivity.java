@@ -1,7 +1,7 @@
 package com.dvr.mel.dronevoicerecognition;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -14,7 +14,7 @@ import android.widget.SeekBar;
  *   Author : https://github.com/Aryetis                                                          *
  **************************************************************************************************/
 
-public class MicCalibrationActivity extends Activity
+public class MicCalibrationActivity extends AppCompatActivity
 {
     /**** UI accessors variables ****/
     // SeekBar minimal values are 0, rule enforced by android. Thus we don't use those values as they are
@@ -29,7 +29,9 @@ public class MicCalibrationActivity extends Activity
         /**** Default minimal UI onCreate ****/
         setTitle("Mic Calibration");
         super.onCreate(savedInstanceState);
+        if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.activity_mic_calibration);
+
 
         /**** Initialize buttons Accessors && actionListerner ****/
         // sensitivity_bar
@@ -73,7 +75,7 @@ public class MicCalibrationActivity extends Activity
             @Override
             public void onClick(View view)
             {
-                sensitivity_bar.setProgress(35); AppInfo.SENSITIVITY = 10;
+                sensitivity_bar.setProgress(40); AppInfo.SENSITIVITY = 10;
                 recording_window_bar.setProgress(8); AppInfo.BUFFER_SIZE_MULTIPLICATOR = 10;
             }
         });

@@ -6,7 +6,8 @@
     <string name="redo_last_recording">Redo last recording</string>
 
 
-    <string name="title_activity_manage_corpuses">Manage Corpuses</string>
+    <string name="title_activity_manage_corpora">Manage Corpora</string>
+    <string name="title_activity_mic_activity">Corpus Recording</string>
 
     <string name="title_activity_mic_calibration">MicCalibration</string>
     <string name="dummy_button">Dummy Button</string>

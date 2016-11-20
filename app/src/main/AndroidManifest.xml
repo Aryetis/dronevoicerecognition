@@ -10,6 +10,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity android:name=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -17,23 +18,34 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MicActivity"></activity>
-        <activity android:name=".MainMenuActivity" />
+
+        <activity android:name=".MicActivity"
+            android:label="@string/title_activity_mic_activity"
+            android:parentActivityName=".ManageCorporaActivity">
+        </activity>
+
+        <activity android:name=".MainMenuActivity" >
+        </activity>
+
         <activity
-            android:name=".ManageCorpusesActivity"
-            android:label="@string/title_activity_manage_corpuses"
+            android:name=".ManageCorporaActivity"
+            android:label="@string/title_activity_manage_corpora"
             android:parentActivityName=".MainMenuActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.dvr.mel.dronevoicerecognition.MainMenuActivity" />
         </activity>
-        <activity android:name=".FinalCorpusActivity" />
+
+        <activity android:name=".FinalCorpusActivity" >
+        </activity>
+
         <activity
             android:name=".MicCalibrationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_mic_calibration"
+            android:theme="@style/FullscreenTheme"
             android:parentActivityName=".MainMenuActivity">
-            android:theme="@style/FullscreenTheme"></activity>
+            </activity>
     </application>
 
 </manifest>

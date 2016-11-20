@@ -1,10 +1,10 @@
 package com.dvr.mel.dronevoicerecognition;
 
 // UI imports
-import android.app.Activity;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -37,7 +37,7 @@ import java.io.File;
 
 
 
-public class MicActivity extends Activity
+public class MicActivity extends AppCompatActivity
 {
     /***************************************************
      *                                                 *
@@ -79,7 +79,9 @@ public class MicActivity extends Activity
         // Default minimal UI onCreate
         setTitle("Corpus Recording Session");
         super.onCreate(savedInstanceState);
+        if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.activity_mic);
+
 
         // Initialize buttons Accessors && actionListerner
         back_btn = (Button) findViewById(R.id.back_button); // Initializing UI accessor

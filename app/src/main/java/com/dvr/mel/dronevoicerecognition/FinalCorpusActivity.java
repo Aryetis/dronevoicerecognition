@@ -61,7 +61,7 @@ public class FinalCorpusActivity extends AppCompatActivity {
 
         AppInfo.saveToSerializedFile();
 
-        startActivity(new Intent(this, ManageCorpusesActivity.class));
+        startActivity(new Intent(this, ManageCorporaActivity.class));
     }
 
     /**
@@ -77,7 +77,7 @@ public class FinalCorpusActivity extends AppCompatActivity {
 
         AppInfo.saveToSerializedFile();
 
-        startActivity(new Intent(this, ManageCorpusesActivity.class));
+        startActivity(new Intent(this, ManageCorporaActivity.class));
     }
 
     /**
