@@ -1,5 +1,7 @@
 package com.dvr.mel.dronevoicerecognition;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,15 +26,17 @@ public class AppInfo implements Serializable{
     public static List<String> usersCorpora = new ArrayList<>();
     public static List<String> commands = new ArrayList<>();
     public static Map<String, Corpus> corpusMap = new HashMap<>();
+    public static int SENSITIVITY = 10; // Set the sensibility threshold of the mic
+    public static int BUFFER_SIZE_MULTIPLICATOR = 10; // Set the size of the streamBuffer Analysed in WavStreamHandler
 
     public File _baseDir, _corpusGlobalDir;
     public List<String> _referencesCorpora = new ArrayList<>();
     public List<String> _usersCorpora = new ArrayList<>();
     public List<String> _commands = new ArrayList<>();
     public Map<String, Corpus> _corpusMap = new HashMap<>();
+    public static int _SENSITIVITY = 10;
+    public static int _BUFFER_SIZE_MULTIPLICATOR = 10;
 
-    public static int SENSITIVITY = 10; // Set the sensibility threshold of the mic
-    public static int BUFFER_SIZE_MULTIPLICATOR = 10; // Set the size of the streamBuffer Analysed in WavStreamHandler
 
     public AppInfo() {    }
 
@@ -94,6 +98,8 @@ public class AppInfo implements Serializable{
         this._usersCorpora = new ArrayList<>(usersCorpora);
         this._commands = new ArrayList<>(commands);
         this._corpusMap = new HashMap<>(corpusMap);
+        this._SENSITIVITY = SENSITIVITY;
+        this._BUFFER_SIZE_MULTIPLICATOR = BUFFER_SIZE_MULTIPLICATOR;
     }
 
     /**
@@ -107,6 +113,8 @@ public class AppInfo implements Serializable{
         usersCorpora = new ArrayList<>(this._usersCorpora);
         commands = new ArrayList<>(this._commands);
         corpusMap = new HashMap<>(this._corpusMap);
+        SENSITIVITY = _SENSITIVITY;
+        BUFFER_SIZE_MULTIPLICATOR = _BUFFER_SIZE_MULTIPLICATOR;
     }
 
 
