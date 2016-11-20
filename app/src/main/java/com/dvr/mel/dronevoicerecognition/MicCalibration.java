@@ -2,6 +2,7 @@ package com.dvr.mel.dronevoicerecognition;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -9,7 +10,7 @@ import android.widget.SeekBar;
 
 /**************************************************************************************************
  *  MicCalibration in a nutshell:                                                                 *
- *      _ Set/Get AppInfo.SENSITIVITY and AppInfo.BUFFER_SIZE_MULTIPLICATOR                 *                                                                                                *
+ *      _ Set/Get AppInfo.SENSITIVITY and AppInfo.BUFFER_SIZE_MULTIPLICATOR                       *
  *                                                                                                *
  *   Author : https://github.com/Aryetis                                                          *
  **************************************************************************************************/
@@ -34,7 +35,8 @@ public class MicCalibration extends Activity
         /**** Initialize buttons Accessors && actionListerner ****/
         // sensitivity_bar
         sensitivity_bar = (SeekBar) findViewById(R.id.sensitivity_bar);
-        sensitivity_bar.setProgress( 45- AppInfo.SENSITIVITY ); // get Actual value and translate it to UI value
+        sensitivity_bar.setProgress( 45-AppInfo.SENSITIVITY ); // get Actual value and translate it to UI value
+        Log.e("MicCalibration", "Initial sensitivity_bar : "+AppInfo.SENSITIVITY);
         sensitivity_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {
             @Override
@@ -47,11 +49,12 @@ public class MicCalibration extends Activity
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar)
-            { AppInfo.SENSITIVITY = 45 - sensitivity_bar.getProgress(); }
+            { AppInfo.SENSITIVITY = 45-sensitivity_bar.getProgress(); Log.e("MicCalibration", "sensitivity_bar set to : "+AppInfo.SENSITIVITY); }
         });
         // recording_window_bar
         recording_window_bar = (SeekBar) findViewById(R.id.recording_window_bar);
         recording_window_bar.setProgress( AppInfo.BUFFER_SIZE_MULTIPLICATOR+2 ); // get Actual value and translate it to UI value
+        Log.e("MicCalibration", "Initial recording_window_bar : "+AppInfo.SENSITIVITY);
         recording_window_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {
             @Override
@@ -64,7 +67,7 @@ public class MicCalibration extends Activity
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar)
-            { AppInfo.BUFFER_SIZE_MULTIPLICATOR = recording_window_bar.getProgress()+2; }
+            { AppInfo.BUFFER_SIZE_MULTIPLICATOR = recording_window_bar.getProgress()-2; Log.e("MicCalibration", "recording_window_bar set to : "+AppInfo.SENSITIVITY);  }
         });
         // reset_button
         reset_button = (Button) findViewById(R.id.reset_button);
