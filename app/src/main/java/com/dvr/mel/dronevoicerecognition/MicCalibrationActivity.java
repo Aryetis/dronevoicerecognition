@@ -51,7 +51,7 @@ public class MicCalibrationActivity extends Activity
         });
         // recording_window_bar
         recording_window_bar = (SeekBar) findViewById(R.id.recording_window_bar);
-        recording_window_bar.setProgress( AppInfo.BUFFER_SIZE_MULTIPLICATOR+2 ); // get Actual value and translate it to UI value
+        recording_window_bar.setProgress( AppInfo.BUFFER_SIZE_MULTIPLICATOR-2 ); // get Actual value and translate it to UI value
         recording_window_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {
             @Override
