@@ -34,6 +34,8 @@ public class CorpusInfo implements Serializable{
     public List<String> _commands = new ArrayList<>();
     public Map<String, Corpus> _corpusMap = new HashMap<>();
 
+    public static int SENSITIVITY = 10; // Set the sensibility threshold of the mic
+    public static int BUFFER_SIZE_MULTIPLICATOR = 10; // Set the size of the streamBuffer Analysed in WavStreamHandler
 
     public CorpusInfo() {    }
 

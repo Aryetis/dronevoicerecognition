@@ -66,9 +66,7 @@ class MicWavRecorderHandler extends Thread
     int SAMPLE_RATE; // in our usecase<=>16000, 16KHz
     int CHANNEL_MODE; // in our usecase<=>AudioFormat.CHANNEL_IN_MONO<=>mono signal
     int ENCODING_FORMAT; // in our usecase<=>AudioFormat.ENCODING_PCM_16BIT<=>16 bits
-    private static int BUFFER_SIZE_MULTIPLICATOR = 10; // Used to define the Audio input's buffer size
-                                                       // May need some empirical tweaking if for instance
-                                                       // the recording trigger itself over a really short but loud Audio burst
+
     /**** Associated threads ****/
     MicActivity uiActivity; // Activity "linked to"/"which started" this MicWavRecorder
     private WavStreamHandler audioAnalyser;
@@ -106,7 +104,7 @@ class MicWavRecorderHandler extends Thread
         ENCODING_FORMAT = ENCODING_FORMAT_;
 
         //Microphone Initialization
-        bufferSizeByte = BUFFER_SIZE_MULTIPLICATOR*AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
+        bufferSizeByte = CorpusInfo.BUFFER_SIZE_MULTIPLICATOR*AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
                     // value expressed in bytes
                     // using 10 times the getMinBufferSize to avoid IO operations and reduce a bad "producer / consumer" case's probabilities
         switch (ENCODING_FORMAT)

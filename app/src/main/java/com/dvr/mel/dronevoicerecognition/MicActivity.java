@@ -76,6 +76,7 @@ public class MicActivity extends Activity
     {
         /********* Standard minimalist UI Initialization *********/
         // Default minimal UI onCreate
+        setTitle("Corpus Recording Session");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mic_test);
 
@@ -266,7 +267,7 @@ public class MicActivity extends Activity
     {   // Close & clean mic (File, outputStream, thread, etc)
         mic.close();
 
-        // Load MainMenyActivity
+        // Load MainMenuActivity
         Intent intent = new Intent(this, MainMenuActivity.class);
         startActivity(intent);
     }

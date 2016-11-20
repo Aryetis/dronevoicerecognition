@@ -15,30 +15,43 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:gravity="center_vertical">
 
         <TextView
-            android:text="TextView"
+            android:text="Mic's sensitivity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/sensibility_bar_label"
-            android:textSize="24sp" />
+            android:id="@+id/sensitivity_bar_label"
+            android:textSize="24sp"
+            android:layout_margin="10dp" />
 
         <SeekBar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/sensibility_bar" />
+            android:id="@+id/sensitivity_bar"
+            android:layout_margin="10dp"
+            android:max="45" />
 
         <TextView
-            android:text="TextView"
+            android:text="Mic recording window's length"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/recording_window_label"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+            android:layout_margin="10dp" />
 
         <SeekBar
             android:layout_width="match_parent"
-            android:id="@+id/recording_window"
-            android:layout_height="wrap_content" />
+            android:id="@+id/recording_window_bar"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:max="18" />
+
+        <Button
+            android:text="Reset Default Values"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/reset_button" />
     </LinearLayout>
 </FrameLayout>

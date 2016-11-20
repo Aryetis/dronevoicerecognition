@@ -35,12 +35,6 @@ class WavStreamHandler extends Thread
     private MicWavRecorderHandler micHandler;
 
     /**** Audio associated variables ****/
-    float SENSITIVITY = 10.F;  // (Empirical value) Used to detect when User start/stop talking
-                                      // the switch triggers when
-                                      // ( "currentBuffer's RMS" > "previousBuffer's RMS" * SENSITIVITY )
-                                      // RMS : Average RMS Amplitude value
-                                      // => Tweak it if the recording starts "randomly" or user needs to yell at the mic
-                                      // TODO : allow user to modify this value in some "OptionActivity"
     private double silenceAvgRMSAmp = 0; // silence's average amplitude
     private int bufferSizeByte; // bufferSizeByte = micHandler.bufferSizeByte; // size of following buffers IN BYTE
     private int bufferSizeElmt; // bufferSizeElmt = micHandler.bufferSizeElmt; // number of Element per buffer
@@ -176,7 +170,7 @@ class WavStreamHandler extends Thread
         double newBufferAvgRMSAmp = getRMSValue();
 
         /**** Detect if ( "User starts talking" ) ****/
-        if ( newBufferAvgRMSAmp >= silenceAvgRMSAmp*SENSITIVITY && !userSpeaking )
+        if ( newBufferAvgRMSAmp >= silenceAvgRMSAmp*CorpusInfo.SENSITIVITY && !userSpeaking )
         {
             // Switch userSpeaking's state flag
             userSpeaking = true;
@@ -191,7 +185,7 @@ class WavStreamHandler extends Thread
         }
 
         /**** Detect if ( "User stops talking" ) ****/
-        if ( newBufferAvgRMSAmp < silenceAvgRMSAmp*SENSITIVITY && userSpeaking )
+        if ( newBufferAvgRMSAmp < silenceAvgRMSAmp*CorpusInfo.SENSITIVITY && userSpeaking )
         {
             // Switch userSpeaking's state flag
             userSpeaking = false;

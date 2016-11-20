@@ -29,4 +29,9 @@ public class MainMenuActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ManageCorpusesActivity.class);
         startActivity(intent);
     }
+
+    public void startMicCalibrationActivity(View view) {
+        Intent intent = new Intent(this, MicCalibration.class);
+        startActivity(intent);
+    }
 }
