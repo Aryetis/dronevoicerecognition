@@ -145,12 +145,12 @@ public class AppInfo implements Serializable{
      * created and the method updateToStaticVariables called.
      */
     public static void loadFromSerializedFile() {
-        File corpusInfoSave = new File(AppInfo.baseDir, "appInfoSaved");
+        File appInfoSaved = new File(AppInfo.baseDir, "appInfoSaved");
 
         try {
             AppInfo ci = new AppInfo();
 
-            FileInputStream fileIn = new FileInputStream(corpusInfoSave.getAbsolutePath());
+            FileInputStream fileIn = new FileInputStream(appInfoSaved.getAbsolutePath());
             ObjectInputStream in = new ObjectInputStream(fileIn);
 
             ci = (AppInfo) in.readObject();

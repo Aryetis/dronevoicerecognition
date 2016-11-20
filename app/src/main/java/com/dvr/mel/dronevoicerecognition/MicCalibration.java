@@ -2,6 +2,7 @@ package com.dvr.mel.dronevoicerecognition;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -83,7 +84,16 @@ public class MicCalibration extends Activity
     protected void onDestroy()
     {
         // Save settings/serialize file
-        AppInfo.saveToSerializedFile();
+//        AppInfo.saveToSerializedFile();
+
+        // Calling default onDestroy()
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
     }
 
 }

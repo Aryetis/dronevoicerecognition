@@ -133,6 +133,17 @@ public class MicActivity extends Activity
 
         // close (and kill threads) MicWavRecorderHandler and its subsidiary WavStreamHandler
         mic.close();
+
+        // Calling default onDestroy()
+        super.onDestroy();
+    }
+
+
+    @Override
+    protected void onStop()
+    {
+        // Calling default onStop()
+        super.onStop();
     }
 
 

@@ -32,6 +32,7 @@
             android:name=".MicCalibration"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_mic_calibration"
+            android:parentActivityName=".MainMenuActivity">
             android:theme="@style/FullscreenTheme"></activity>
     </application>
 
