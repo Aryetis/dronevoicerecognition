@@ -104,7 +104,7 @@ class MicWavRecorderHandler extends Thread
         ENCODING_FORMAT = ENCODING_FORMAT_;
 
         //Microphone Initialization
-        bufferSizeByte = CorpusInfo.BUFFER_SIZE_MULTIPLICATOR*AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
+        bufferSizeByte = AppInfo.BUFFER_SIZE_MULTIPLICATOR*AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_MODE, ENCODING_FORMAT);
                     // value expressed in bytes
                     // using 10 times the getMinBufferSize to avoid IO operations and reduce a bad "producer / consumer" case's probabilities
         switch (ENCODING_FORMAT)

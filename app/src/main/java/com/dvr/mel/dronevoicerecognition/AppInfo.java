@@ -1,8 +1,5 @@
 package com.dvr.mel.dronevoicerecognition;
 
-import android.util.ArrayMap;
-import android.util.Log;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,7 +18,7 @@ import java.util.Map;
  * Created by leo on 16/11/16.
  */
 
-public class CorpusInfo implements Serializable{
+public class AppInfo implements Serializable{
     public static File baseDir, corpusGlobalDir;
     public static List<String> referencesCorpora = new ArrayList<>();
     public static List<String> usersCorpora = new ArrayList<>();
@@ -37,7 +34,7 @@ public class CorpusInfo implements Serializable{
     public static int SENSITIVITY = 10; // Set the sensibility threshold of the mic
     public static int BUFFER_SIZE_MULTIPLICATOR = 10; // Set the size of the streamBuffer Analysed in WavStreamHandler
 
-    public CorpusInfo() {    }
+    public AppInfo() {    }
 
     /**
      * Delete all the files and directories related to one corpus from the phone memory.
@@ -58,7 +55,7 @@ public class CorpusInfo implements Serializable{
     }
 
     /**
-     * Update some static variables from the CorpusInfo class if a corpus has been add.
+     * Update some static variables from the AppInfo class if a corpus has been add.
      * @param name
      * @param corpus
      */
@@ -114,18 +111,18 @@ public class CorpusInfo implements Serializable{
 
 
     /**
-     * Will save the CorpusInfo class into a serialized file.
+     * Will save the AppInfo class into a serialized file.
      * In order to be sure that the static variables are correctly updates before writing down the
      * file, an instance need to be created and the method updateFromStaticVariables called.
      */
     public static void saveToSerializedFile() {
-        File corpusInfoSave = new File(CorpusInfo.baseDir, "corpusInfoSaved");
+        File appInfoSaved = new File(AppInfo.baseDir, "appInfoSaved");
 
         try {
-            CorpusInfo ci = new CorpusInfo();
+            AppInfo ci = new AppInfo();
             ci.updateFromStaticVariables();
 
-            FileOutputStream fileOut = new FileOutputStream(corpusInfoSave.getAbsolutePath());
+            FileOutputStream fileOut = new FileOutputStream(appInfoSaved.getAbsolutePath());
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
 
             out.writeObject(ci);
@@ -143,20 +140,20 @@ public class CorpusInfo implements Serializable{
 
 
     /**
-     * Will load the CorpusInfo class from his saved which is a serialized file.
+     * Will load the AppInfo class from his saved which is a serialized file.
      * In order to be sure that the static variables are correctly updates, an instance need to be
      * created and the method updateToStaticVariables called.
      */
     public static void loadFromSerializedFile() {
-        File corpusInfoSave = new File(CorpusInfo.baseDir, "corpusInfoSaved");
+        File corpusInfoSave = new File(AppInfo.baseDir, "appInfoSaved");
 
         try {
-            CorpusInfo ci = new CorpusInfo();
+            AppInfo ci = new AppInfo();
 
             FileInputStream fileIn = new FileInputStream(corpusInfoSave.getAbsolutePath());
             ObjectInputStream in = new ObjectInputStream(fileIn);
 
-            ci = (CorpusInfo) in.readObject();
+            ci = (AppInfo) in.readObject();
             ci.updateToStaticVariables();
 
             in.close();

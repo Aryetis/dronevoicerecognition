@@ -92,7 +92,7 @@ class WavStreamHandler extends Thread
 
         // Set output file and stream
         // create specific corpus's subdirectory
-        corpusDir = new File(CorpusInfo.corpusGlobalDir, MicActivity.corpusName);
+        corpusDir = new File(AppInfo.corpusGlobalDir, MicActivity.corpusName);
         if ( !corpusDir.exists())
             try
             {
@@ -170,7 +170,7 @@ class WavStreamHandler extends Thread
         double newBufferAvgRMSAmp = getRMSValue();
 
         /**** Detect if ( "User starts talking" ) ****/
-        if ( newBufferAvgRMSAmp >= silenceAvgRMSAmp*CorpusInfo.SENSITIVITY && !userSpeaking )
+        if ( newBufferAvgRMSAmp >= silenceAvgRMSAmp* AppInfo.SENSITIVITY && !userSpeaking )
         {
             // Switch userSpeaking's state flag
             userSpeaking = true;
@@ -185,7 +185,7 @@ class WavStreamHandler extends Thread
         }
 
         /**** Detect if ( "User stops talking" ) ****/
-        if ( newBufferAvgRMSAmp < silenceAvgRMSAmp*CorpusInfo.SENSITIVITY && userSpeaking )
+        if ( newBufferAvgRMSAmp < silenceAvgRMSAmp* AppInfo.SENSITIVITY && userSpeaking )
         {
             // Switch userSpeaking's state flag
             userSpeaking = false;

@@ -199,7 +199,7 @@ public class ManageCorpusesActivity extends AppCompatActivity {
                 String description = (nameEditText != null ? descriptionEditText.getText().toString().trim() : "");*/
                 if (!name.isEmpty()) {
                     Intent intentToCreateCorpus = new Intent(context, MicActivity.class);
-                    String secureName = CorpusInfo.sanitarizeName(name);
+                    String secureName = AppInfo.sanitarizeName(name);
                     intentToCreateCorpus.putExtra("name", secureName);
                     intentToCreateCorpus.putExtra("corpus", new Corpus(secureName, name));
                     startActivity(intentToCreateCorpus);

@@ -1,30 +1,18 @@
 package com.dvr.mel.dronevoicerecognition;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 public class LauncherActivity extends AppCompatActivity {
 
@@ -53,7 +41,7 @@ public class LauncherActivity extends AppCompatActivity {
         Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/letraHipster.ttf");
         tx.setTypeface(custom_font);
 
-        // populate CorpusInfo static fields
+        // populate AppInfo static fields
         populateCorpusInfo();
     }
 
@@ -68,40 +56,40 @@ public class LauncherActivity extends AppCompatActivity {
 
         // build tree directory if needed
         // get the base dir for all date linked to our application
-        CorpusInfo.baseDir = cw.getDir("data", Context.MODE_PRIVATE);
+        AppInfo.baseDir = cw.getDir("data", Context.MODE_PRIVATE);
         // <=> /DATA/DATA/com.dvr.mel.dronevoicerecognition/app_data   (yes it prefixes with "app_")
 
         // check if the file corpusInfoSaved exist (serialized)
-        File corpusInfoSave = new File(CorpusInfo.baseDir, "corpusInfoSaved");
+        File corpusInfoSave = new File(AppInfo.baseDir, "corpusInfoSaved");
 
         // it doesn't exist
         if ( ! corpusInfoSave.exists() ) {
             Log.e("launcher", "le fichier serialisé n'existe pas");
 
             // let's create a sufolder for stocking all of our Corpora
-            CorpusInfo.corpusGlobalDir = new File(CorpusInfo.baseDir, "Corpus");
-            if ( ! CorpusInfo.corpusGlobalDir.exists())
-                CorpusInfo.corpusGlobalDir.mkdir();
+            AppInfo.corpusGlobalDir = new File(AppInfo.baseDir, "Corpus");
+            if ( ! AppInfo.corpusGlobalDir.exists())
+                AppInfo.corpusGlobalDir.mkdir();
             // <=> /DATA/DATA/com.dvr.mel.dronevoicerecognition/app_data/Corpus
 
             // .... commands
-            CorpusInfo.commands.add("avance");
-            CorpusInfo.commands.add("recule");
-            CorpusInfo.commands.add("droite");
-            CorpusInfo.commands.add("gauche");
-            CorpusInfo.commands.add("etatdurgence");
-            CorpusInfo.commands.add("tournedroite");
-            CorpusInfo.commands.add("tournegauche");
-            CorpusInfo.commands.add("faisunflip");
-            CorpusInfo.commands.add("arretetoi");
+            AppInfo.commands.add("avance");
+            AppInfo.commands.add("recule");
+            AppInfo.commands.add("droite");
+            AppInfo.commands.add("gauche");
+            AppInfo.commands.add("etatdurgence");
+            AppInfo.commands.add("tournedroite");
+            AppInfo.commands.add("tournegauche");
+            AppInfo.commands.add("faisunflip");
+            AppInfo.commands.add("arretetoi");
 
             // save the file
-           CorpusInfo.saveToSerializedFile();
+           AppInfo.saveToSerializedFile();
         }
 
         // it exist
         else {
-            CorpusInfo.loadFromSerializedFile();
+            AppInfo.loadFromSerializedFile();
         }
     }
 }

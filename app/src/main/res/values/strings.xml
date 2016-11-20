@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">dronevoicerecognition</string>
 
-    <string name="title_activity_mic_test">MicTestActivity</string>
+    <string name="title_activity_mic">MicActivity</string>
     <string name="cancel_recording">Cancel Recording</string>
     <string name="redo_last_recording">Redo last recording</string>
 

@@ -1,7 +1,5 @@
 package com.dvr.mel.dronevoicerecognition;
 
-import android.os.Parcelable;
-
 import java.io.Serializable;
 
 /**
@@ -21,7 +19,7 @@ class Corpus implements Serializable{
         this.mDisplayName = displayName;
         mHasDisplayName = !mDisplayName.isEmpty();
         // If first ever created it is the reference
-        if(CorpusInfo.referencesCorpora.isEmpty()) this.setAsReference();
+        if(AppInfo.referencesCorpora.isEmpty()) this.setAsReference();
     }
 
     public Corpus(String name)
@@ -30,7 +28,7 @@ class Corpus implements Serializable{
         this.mDisplayName = name;
         this.mHasDisplayName = false;
         // If first ever created it is the reference
-        if(CorpusInfo.referencesCorpora.isEmpty()) this.setAsReference();
+        if(AppInfo.referencesCorpora.isEmpty()) this.setAsReference();
     }
 
     public String getName() {
@@ -58,14 +56,14 @@ class Corpus implements Serializable{
         // Self is now a reference
         this.mReference = true;
         // Self is to be added to the set of corpora
-        CorpusInfo.referencesCorpora.add(this.getName());
+        AppInfo.referencesCorpora.add(this.getName());
     }
 
     public void unsetReference() {
         // Self is now a reference
         this.mReference = false;
         // Self is to be added to the set of corpora
-        CorpusInfo.referencesCorpora.remove(this.getName());
+        AppInfo.referencesCorpora.remove(this.getName());
     }
 
 }

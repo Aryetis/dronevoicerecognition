@@ -1,16 +1,11 @@
 package com.dvr.mel.dronevoicerecognition;
 
 import android.content.Intent;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
-import java.io.File;
 import java.util.List;
 
 public class FinalCorpusActivity extends AppCompatActivity {
@@ -35,21 +30,21 @@ public class FinalCorpusActivity extends AppCompatActivity {
         // The first corpus is automatically set as reference
         TextView middleLabel = (TextView) findViewById(R.id.labelRecognition);
 
-        if (CorpusInfo.referencesCorpora.isEmpty()) {
+        if (AppInfo.referencesCorpora.isEmpty()) {
             middleLabel = (TextView) findViewById(R.id.labelRecognition);
             middleLabel.setText("Aucune références à été définie");
 
-            CorpusInfo.referencesCorpora.add(b.getString("name"));
-            CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
+            AppInfo.referencesCorpora.add(b.getString("name"));
+            AppInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
 
-            CorpusInfo.saveToSerializedFile();
+            AppInfo.saveToSerializedFile();
         }
 
         // yes - run the recognition code true all the references and display the success percent
         else {
             float percent = computeRecognitionRatio(
-                CorpusInfo.corpusGlobalDir.getAbsolutePath(),
-                CorpusInfo.referencesCorpora,
+                AppInfo.corpusGlobalDir.getAbsolutePath(),
+                AppInfo.referencesCorpora,
                 b.getString("name"));
 
             middleLabel.setText(Float.toString(percent));
@@ -62,25 +57,25 @@ public class FinalCorpusActivity extends AppCompatActivity {
      * @param view
      */
     public void corpusFailHandler(View view) {
-        CorpusInfo.clean(b.getString("name"));
+        AppInfo.clean(b.getString("name"));
 
-        CorpusInfo.saveToSerializedFile();
+        AppInfo.saveToSerializedFile();
 
         startActivity(new Intent(this, ManageCorpusesActivity.class));
     }
 
     /**
      * The user presses the green cross.
-     * Update the static variables linked to the CorpusInfo class. usersCorpora and corpusMap.
+     * Update the static variables linked to the AppInfo class. usersCorpora and corpusMap.
      * Update the serialized file of the class into the memory. and go back to the ManageCorpus
      * Activity
      * @param view
      */
     public void corpusPassHandler(View view) {
-        // Mettre à jours la class CorpusInfo.
-        CorpusInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
+        // Mettre à jours la class AppInfo.
+        AppInfo.addCorpus(b.getString("name"), (Corpus) b.getSerializable("corpus"));
 
-        CorpusInfo.saveToSerializedFile();
+        AppInfo.saveToSerializedFile();
 
         startActivity(new Intent(this, ManageCorpusesActivity.class));
     }

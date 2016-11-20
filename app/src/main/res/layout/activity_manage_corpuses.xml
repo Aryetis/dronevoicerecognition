@@ -50,7 +50,6 @@
         android:scaleType="center"
         app:fabSize="normal"
         android:onClick="addNewCorpus"
-
         />
 
 

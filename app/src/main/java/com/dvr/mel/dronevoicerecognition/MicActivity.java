@@ -78,7 +78,7 @@ public class MicActivity extends Activity
         // Default minimal UI onCreate
         setTitle("Corpus Recording Session");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mic_test);
+        setContentView(R.layout.activity_mic);
 
         // Initialize buttons Accessors && actionListerner
         back_btn = (Button) findViewById(R.id.back_button); // Initializing UI accessor
@@ -147,10 +147,10 @@ public class MicActivity extends Activity
 
     public String getCurrentCommandName()
     {   // return string containing text of current command being recorded
-        if ( curCommandListIndex >= CorpusInfo.commands.size() )
+        if ( curCommandListIndex >= AppInfo.commands.size() )
             return null; // return null if going OOB
         else
-            return CorpusInfo.commands.get(curCommandListIndex);
+            return AppInfo.commands.get(curCommandListIndex);
     }
 
 
@@ -197,7 +197,7 @@ public class MicActivity extends Activity
             }
             default:
             {
-                if ( curCommandListIndex >= CorpusInfo.commands.size() )
+                if ( curCommandListIndex >= AppInfo.commands.size() )
                 {   // curCommandListIndex is getting out of Bound<=>we reached the end of our commandList
                     recordingCompleted = true;
                     goToNextActivity();
@@ -238,7 +238,7 @@ public class MicActivity extends Activity
         boolean destroySuccess = true;
 
         // get corpus's specific directory
-        File corpusDir = new File( CorpusInfo.baseDir, corpusName);
+        File corpusDir = new File( AppInfo.baseDir, corpusName);
         if (!corpusDir.exists())
             return true;
 
