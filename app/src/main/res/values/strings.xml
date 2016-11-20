@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Drone Voice Recognition</string>
+    <string name="app_name">dronevoicerecognition</string>
+
+    <string name="title_activity_mic">MicActivity</string>
+    <string name="cancel_recording">Cancel Recording</string>
+    <string name="redo_last_recording">Redo last recording</string>
+
+
+    <string name="title_activity_manage_corpuses">Manage Corpuses</string>
+
+    <string name="title_activity_mic_calibration">MicCalibration</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

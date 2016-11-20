@@ -1,6 +1,9 @@
 .gradle
 gradle
 .idea
+build.gradle
+dronevoicerecognition.iml
+dronevoicerecognition-github.iml
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
