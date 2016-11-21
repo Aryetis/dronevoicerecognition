@@ -91,6 +91,10 @@ public class MicCalibrationActivity extends AppCompatActivity
         super.onDestroy();
     }
 
+    protected void saveSensibility(View view) {
+        AppInfo.saveToSerializedFile();
+    }
+
     @Override
     protected void onStop()
     {
