@@ -13,8 +13,10 @@ import java.io.Serializable;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by leo on 16/11/16.
@@ -23,8 +25,8 @@ import java.util.Map;
 public class AppInfo implements Serializable{
     public static String serializedFileName = "appInfoSaved";
     public static File baseDir, corpusGlobalDir;
-    public static List<String> referencesCorpora = new ArrayList<>();
-    public static List<String> usersCorpora = new ArrayList<>();
+    public static Set<String> referencesCorpora = new LinkedHashSet<>();
+    public static Set<String> usersCorpora = new LinkedHashSet<>();
     public static List<String> commands = new ArrayList<>();
     public static Map<String, Corpus> corpusMap = new HashMap<>();
     public static int SENSITIVITY = 10; // Set the sensibility threshold of the mic
@@ -32,8 +34,8 @@ public class AppInfo implements Serializable{
 
     public String _serializedFileName;
     public File _baseDir, _corpusGlobalDir;
-    public List<String> _referencesCorpora = new ArrayList<>();
-    public List<String> _usersCorpora = new ArrayList<>();
+    public Set<String> _referencesCorpora = new LinkedHashSet<>();
+    public Set<String> _usersCorpora = new LinkedHashSet<>();
     public List<String> _commands = new ArrayList<>();
     public Map<String, Corpus> _corpusMap = new HashMap<>();
     public int _SENSITIVITY;
@@ -97,8 +99,8 @@ public class AppInfo implements Serializable{
         this._serializedFileName = serializedFileName;
         this._baseDir = new File(baseDir.getAbsolutePath());
         this._corpusGlobalDir = new File(corpusGlobalDir.getAbsolutePath());
-        this._referencesCorpora = new ArrayList<>(referencesCorpora);
-        this._usersCorpora = new ArrayList<>(usersCorpora);
+        this._referencesCorpora = new LinkedHashSet<>(referencesCorpora);
+        this._usersCorpora = new LinkedHashSet<>(usersCorpora);
         this._commands = new ArrayList<>(commands);
         this._corpusMap = new HashMap<>(corpusMap);
         this._SENSITIVITY = SENSITIVITY;
@@ -113,8 +115,8 @@ public class AppInfo implements Serializable{
         serializedFileName = _serializedFileName;
         baseDir = new File(this._baseDir.getAbsolutePath());
         corpusGlobalDir = new File(this._corpusGlobalDir.getAbsolutePath());
-        referencesCorpora = new ArrayList<>(this._referencesCorpora);
-        usersCorpora = new ArrayList<>(this._usersCorpora);
+        referencesCorpora = new LinkedHashSet<>(this._referencesCorpora);
+        usersCorpora = new LinkedHashSet<>(this._usersCorpora);
         commands = new ArrayList<>(this._commands);
         corpusMap = new HashMap<>(this._corpusMap);
         SENSITIVITY = _SENSITIVITY;

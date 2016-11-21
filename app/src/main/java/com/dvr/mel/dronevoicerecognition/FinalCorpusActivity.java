@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FinalCorpusActivity extends AppCompatActivity {
@@ -44,7 +45,7 @@ public class FinalCorpusActivity extends AppCompatActivity {
         else {
             float percent = computeRecognitionRatio(
                 AppInfo.corpusGlobalDir.getAbsolutePath(),
-                AppInfo.referencesCorpora,
+                new ArrayList<String>(AppInfo.referencesCorpora),
                 b.getString("name"));
 
             middleLabel.setText(Float.toString(percent));
