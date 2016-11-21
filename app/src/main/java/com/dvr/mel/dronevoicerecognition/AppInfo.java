@@ -16,7 +16,7 @@ import java.util.Set;
  * Created by leo on 16/11/16.
  */
 
-public class CorpusInfo implements Serializable{
+public class AppInfo implements Serializable{
     public static File baseDir, corpusGlobalDir;
     public static Set<String> referencesCorpora = new HashSet<>();
     public static Set<String> usersCorpora = new HashSet<>();
@@ -30,7 +30,7 @@ public class CorpusInfo implements Serializable{
     public Map<String, Corpus> _corpusMap = new HashMap<>();
 
 
-    public CorpusInfo() {    }
+    public AppInfo() {    }
 
     public static void clean(String corpusName) {
         // Delete all files related to the corpus designed by corpusName
