@@ -18,10 +18,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Set;
-
-public class ManageCorpusesActivity extends AppCompatActivity {
+public class ManageCorporaActivity extends AppCompatActivity {
 
 
     RecyclerView.Adapter userAdapter;
@@ -126,7 +123,7 @@ public class ManageCorpusesActivity extends AppCompatActivity {
                         else
                             contextMenu.add(0, finalpos, 0, "Set as reference");
                         contextMenu.add(0, finalpos, 0, "Remove");
-                        ManageCorpusesActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
+                        ManageCorporaActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
                     }
 
                 });
