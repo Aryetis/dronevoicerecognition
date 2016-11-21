@@ -21,6 +21,7 @@ import java.util.Map;
  */
 
 public class AppInfo implements Serializable{
+    public static String serializedFileName = "appInfoSaved";
     public static File baseDir, corpusGlobalDir;
     public static List<String> referencesCorpora = new ArrayList<>();
     public static List<String> usersCorpora = new ArrayList<>();
@@ -29,6 +30,7 @@ public class AppInfo implements Serializable{
     public static int SENSITIVITY = 10; // Set the sensibility threshold of the mic
     public static int BUFFER_SIZE_MULTIPLICATOR = 10; // Set the size of the streamBuffer Analysed in WavStreamHandler
 
+    public String _serializedFileName;
     public File _baseDir, _corpusGlobalDir;
     public List<String> _referencesCorpora = new ArrayList<>();
     public List<String> _usersCorpora = new ArrayList<>();
@@ -92,6 +94,7 @@ public class AppInfo implements Serializable{
      * the static variables
      */
     public void updateFromStaticVariables() {
+        this._serializedFileName = serializedFileName;
         this._baseDir = new File(baseDir.getAbsolutePath());
         this._corpusGlobalDir = new File(corpusGlobalDir.getAbsolutePath());
         this._referencesCorpora = new ArrayList<>(referencesCorpora);
@@ -107,6 +110,7 @@ public class AppInfo implements Serializable{
      * ce which is calling the method
      */
     public void updateToStaticVariables() {
+        serializedFileName = _serializedFileName;
         baseDir = new File(this._baseDir.getAbsolutePath());
         corpusGlobalDir = new File(this._corpusGlobalDir.getAbsolutePath());
         referencesCorpora = new ArrayList<>(this._referencesCorpora);
@@ -124,9 +128,9 @@ public class AppInfo implements Serializable{
      * file, an instance need to be created and the method updateFromStaticVariables called.
      */
     public static void saveToSerializedFile() {
-        File appInfoSaved = new File(AppInfo.baseDir, "appInfoSaved");
+        File appInfoSaved = new File(AppInfo.baseDir, serializedFileName);
 
-        try {
+        try{
             AppInfo ci = new AppInfo();
             ci.updateFromStaticVariables();
 
@@ -153,7 +157,7 @@ public class AppInfo implements Serializable{
      * created and the method updateToStaticVariables called.
      */
     public static void loadFromSerializedFile() {
-        File appInfoSaved = new File(AppInfo.baseDir, "appInfoSaved");
+        File appInfoSaved = new File(AppInfo.baseDir, serializedFileName);
 
         try {
             AppInfo ci = new AppInfo();

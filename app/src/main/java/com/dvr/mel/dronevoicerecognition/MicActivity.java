@@ -1,11 +1,10 @@
 package com.dvr.mel.dronevoicerecognition;
 
 // UI imports
-import android.app.Activity;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -16,18 +15,19 @@ import java.io.File;
 
 
 /**************************************************************************************************
- *  MicActivity in a nutshell:                                                                *
- *      _ get corpusName and corpusList from Parent Activity's Intent                             *
- *      _ pass corpusName to child Activity's Intent                                              *
+ *  MicActivity in a nutshell:                                                                    *
+ *      _ get and pass a Bundle of informations to FinalCorpusActivity                            *
  *      _ Use MicWavRecorderHandler (& WavStreamHandler) to record                                *
- *        a list of Wav audio files according to corpusList                                       *
+ *        a list of Wav audio files according to corpusList variable located in AppInfo           *
+ *      _ Handle deletion/overwriting of files and folder in case of record session cancellation  *
+ *        / app crashes / etc                                                                     *
  *                                                                                                *
  *  Sidenotes :                                                                                   *
  *  _ If it helps, see Mic related Activities as MVC designed activities,                         *
- *    with MicActivity being the View,                                                        *
+ *    with MicActivity being the View,                                                            *
  *    MicWavRecorderHandler being a model, the middle-man between UI and IO Files related stuff   *
  *    and WavStreamHandler computing the streams (Mic and IO) and sending update signal to        *
- *    the MicActivity/View                                                                    *
+ *    the MicActivity/View                                                                        *
  *  _ When starting a recording session if it is not done till completion no file will be kept.   *
  *    Thus RErecording an already existing corpus will erase it regardless if the user            *
  *    complete the second corpus recording session or not !!!!                                    *
@@ -37,7 +37,7 @@ import java.io.File;
 
 
 
-public class MicActivity extends Activity
+public class MicActivity extends AppCompatActivity
 {
     /***************************************************
      *                                                 *
@@ -79,7 +79,9 @@ public class MicActivity extends Activity
         // Default minimal UI onCreate
         setTitle("Corpus Recording Session");
         super.onCreate(savedInstanceState);
+        if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.activity_mic);
+
 
         // Initialize buttons Accessors && actionListerner
         back_btn = (Button) findViewById(R.id.back_button); // Initializing UI accessor

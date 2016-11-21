@@ -1,22 +1,18 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
-    tools:context="com.dvr.mel.dronevoicerecognition.MicCalibrationActivity">
+    tools:context="com.dvr.mel.dronevoicerecognition.MicCalibrationActivity"
+    tools:theme="@style/AppTheme" >
 
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
-
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:background="@color/colorPrimaryAsh">
 
         <TextView
             android:text="Mic's sensitivity"
@@ -24,7 +20,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/sensitivity_bar_label"
             android:textSize="24sp"
-            android:layout_margin="10dp" />
+            android:layout_margin="10dp"
+            android:textColor="@color/colorAccent" />
 
         <SeekBar
             android:layout_width="match_parent"
@@ -39,7 +36,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/recording_window_label"
             android:textSize="24sp"
-            android:layout_margin="10dp" />
+            android:layout_margin="10dp"
+            android:textColor="@color/colorAccent" />
 
         <SeekBar
             android:layout_width="match_parent"
@@ -52,6 +50,9 @@
             android:text="Reset Default Values"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/reset_button" />
+            android:id="@+id/reset_button"
+            android:background="@color/colorPrimary"
+            android:layout_margin="10dp"
+            android:textColor="@color/colorAccent" />
     </LinearLayout>
-</FrameLayout>
+</RelativeLayout>

@@ -2,7 +2,6 @@ package com.dvr.mel.dronevoicerecognition;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -21,7 +20,7 @@ public class CorpusViewAdapter extends BaseAdapter {
     Context context;
     private static LayoutInflater inflater=null;
 
-    public CorpusViewAdapter(ManageCorpusesActivity activity, ArrayList<String> corpusNameList) {
+    public CorpusViewAdapter(ManageCorporaActivity activity, ArrayList<String> corpusNameList) {
         result=corpusNameList;
         context=activity;
 

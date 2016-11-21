@@ -22,13 +22,13 @@
         android:layout_alignParentStart="true">
 
         <Button
-            android:text="Manage Corpuses"
+            android:text="Manage Corpora"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/manageCorpusesButton"
+            android:id="@+id/manageCorporaButton"
             android:background="@color/colorPrimary"
             android:layout_margin="10dp"
-            android:onClick="startManageCorpusesActivity"
+            android:onClick="startManageCorporaActivity"
             android:textColor="@color/colorAccent" />
 
         <Button
@@ -47,8 +47,8 @@
             android:id="@+id/micCalibrationButton"
             android:background="@color/colorPrimary"
             android:onClick="startMicCalibrationActivity"
-            android:layout_margin="10dp" />
-            android:textColor="@color/colorAccent"
+            android:layout_margin="10dp"
+            android:textColor="@color/colorAccent"/>
 
     </LinearLayout>
 </RelativeLayout>
