@@ -68,8 +68,7 @@ public class LauncherActivity extends AppCompatActivity {
 
             // let's create a sufolder for stocking all of our Corpora
             AppInfo.corpusGlobalDir = new File(AppInfo.baseDir, "Corpus");
-            if ( ! AppInfo.corpusGlobalDir.exists())
-                AppInfo.corpusGlobalDir.mkdir();
+            AppInfo.corpusGlobalDir.mkdir();
             // <=> /DATA/DATA/com.dvr.mel.dronevoicerecognition/app_data/Corpus
 
             // .... commands
