@@ -31,14 +31,14 @@
             android:onClick="startManageCorporaActivity"
             android:textColor="@color/colorAccent" />
 
-        <Button
-            android:text="Test Corpus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/testCorpusButton"
-            android:background="@color/colorPrimary"
-            android:layout_margin="10dp"
-            android:textColor="@color/colorAccent" />
+        <!--<Button-->
+            <!--android:text="Test Corpus"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:id="@+id/testCorpusButton"-->
+            <!--android:background="@color/colorPrimary"-->
+            <!--android:layout_margin="10dp"-->
+            <!--android:textColor="@color/colorAccent" />-->
 
         <Button
             android:text="Mic Calibration"
