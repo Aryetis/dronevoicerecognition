@@ -22,10 +22,7 @@ import java.util.ArrayList;
 
 public class ManageCorporaActivity extends AppCompatActivity {
 
-
-    RecyclerView.Adapter adapter;
     RecyclerView.Adapter userAdapter;
-    RecyclerView staticCorpusesRecyclerView;
     RecyclerView userCorpusesRecyclerView;
     LinearLayoutManager layoutManager;
     Context context = this;
@@ -185,6 +182,8 @@ public class ManageCorporaActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        userAdapter = getUserAdapter();
+        this.recreate();
         userAdapter.notifyDataSetChanged();
     }
 
@@ -192,6 +191,7 @@ public class ManageCorporaActivity extends AppCompatActivity {
     protected void onPostResume() {
         super.onPostResume();
         userAdapter = getUserAdapter();
+        this.recreate();
         userAdapter.notifyDataSetChanged();
     }
 }
