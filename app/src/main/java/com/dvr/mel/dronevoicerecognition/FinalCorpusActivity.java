@@ -10,6 +10,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * Needs to go away
+ */
+
 public class FinalCorpusActivity extends AppCompatActivity {
     public Bundle b;
 
