@@ -112,6 +112,7 @@ public class ManageCorporaActivity extends AppCompatActivity {
                 AppInfo.referencesCorpora.remove(secureName);
                 AppInfo.usersCorpora.remove(secureName);
                 AppInfo.clean(secureName);
+                AppInfo.saveToSerializedFile();
                 Toast.makeText(context, "Reference " + corpus.getDisplayName() + " removed.", Toast.LENGTH_SHORT).show();
                 break;
             case "Set as reference":
