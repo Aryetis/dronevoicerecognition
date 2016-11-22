@@ -294,7 +294,7 @@ public class MicActivity extends AppCompatActivity
 
         /**** Load FinalCorpusActivity ****/
         // Create intent
-        Intent intent = new Intent(this, FinalCorpusActivity.class);
+        Intent intent = new Intent(this, ConfirmationActivity.class);
         // Get Bundle from MainMenuActivity and pass it over
         Bundle b = getIntent().getExtras();
         intent.putExtras(b);
