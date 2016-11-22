@@ -142,8 +142,12 @@ class MicWavRecorderHandler extends Thread
 
     void close()
     {   // closing microphone
-        mic.stop();
-        mic.release();
+        if (mic != null && mic.getState() != AudioRecord.STATE_UNINITIALIZED) {
+            if (mic.getRecordingState() != AudioRecord.RECORDSTATE_STOPPED) {
+                mic.stop();
+            }
+            mic.release();
+        }
 
         //closing AudioAnalyser
         audioAnalyser.close();

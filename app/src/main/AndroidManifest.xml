@@ -20,8 +20,9 @@
         <activity
             android:name=".MicActivity"
             android:label="@string/title_activity_mic_activity"
-            android:parentActivityName=".ManageCorporaActivity"></activity>
-        <activity android:name=".MainMenuActivity"></activity>
+            android:parentActivityName=".ManageCorporaActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".MainMenuActivity"/>
         <activity
             android:name=".ManageCorporaActivity"
             android:label="@string/title_activity_manage_corpora"
@@ -30,16 +31,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.dvr.mel.dronevoicerecognition.MainMenuActivity" />
         </activity>
-        <activity android:name=".FinalCorpusActivity"></activity>
+        <activity android:name=".FinalCorpusActivity"/>
         <activity
             android:name=".MicCalibrationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_mic_calibration"
             android:parentActivityName=".MainMenuActivity"
-            android:theme="@style/FullscreenTheme"></activity>
+            android:theme="@style/FullscreenTheme"/>
         <activity android:name=".ConfirmationActivity"
-            android:parentActivityName=".ManageCorporaActivity"
-            ></activity>
+            android:parentActivityName=".ManageCorporaActivity"/>
     </application>
 
 </manifest>
