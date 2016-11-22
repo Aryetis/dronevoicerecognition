@@ -41,27 +41,64 @@ public class ManageCorporaActivity extends AppCompatActivity {
         /*
         * USER RECYCLER VIEW LIST
         * */
-
-        // List adapter of recycler view
-        userAdapter = getUserAdapter();
         // Instanciate layoutmanager
         layoutManager = new LinearLayoutManager(context);
-
         // Get recycler view
         userCorpusesRecyclerView = (RecyclerView) findViewById(R.id.user_corpora_recyclerview);
-
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(userCorpusesRecyclerView.getContext(),
                 layoutManager.getOrientation());
-
         // Add same divider decorator
         userCorpusesRecyclerView.addItemDecoration(dividerItemDecoration);
 
+        // List adapter of recycler view
+        userAdapter = new RecyclerView.Adapter() {
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.base_rounded_letter_view_item_list, parent, false);
+                return new RecyclerView.ViewHolder(view) {
+                    @Override
+                    public String toString() {
+                        return super.toString();
+                    }
+                };
+            }
+
+            @Override
+            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+                final int finalpos = position;
+                final String secureName = (String) AppInfo.usersCorpora.toArray()[position];
+                final Corpus corpusObject = AppInfo.corpusMap.get(secureName);
+                ((RoundedLetterView)holder.itemView.findViewById(R.id.rlv_rlv)).setTitleText("C"+position);
+                ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(corpusObject.getDisplayName());
+                holder.itemView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+                    @Override
+                    public void onCreateContextMenu(ContextMenu contextMenu, final View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
+
+                        contextMenu.setHeaderTitle("Select an action");
+                        /*
+                        if(AppInfo.referencesCorpora.contains(secureName))
+                            contextMenu.add(0, finalpos, 0, "Unset reference");
+                        else
+                            contextMenu.add(0, finalpos, 0, "Set as reference");
+                         */
+                        contextMenu.add(0, finalpos, 0, "Remove");
+                        ManageCorporaActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
+                    }
+
+                });
+
+            }
+
+            @Override
+            public int getItemCount() {
+                return AppInfo.usersCorpora.size();
+            }
+        };
+        // Add layout Manager
+        userCorpusesRecyclerView.setLayoutManager(layoutManager);
         // List adapter
         userCorpusesRecyclerView.setAdapter(userAdapter);
 
-        // Add layout Manager
-
-        userCorpusesRecyclerView.setLayoutManager(layoutManager);
 
     }
 
@@ -86,57 +123,10 @@ public class ManageCorporaActivity extends AppCompatActivity {
                 Toast.makeText(context, "Reference " + corpus.getDisplayName() + " unset.", Toast.LENGTH_SHORT).show();
                 break;
         }
-        this.recreate();
+        //this.recreate();
         return super.onContextItemSelected(item);
     }
 
-    public RecyclerView.Adapter getUserAdapter(){
-        return new RecyclerView.Adapter() {
-            @Override
-            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-
-
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.base_rounded_letter_view_item_list, parent, false);
-
-                return new RecyclerView.ViewHolder(view) {
-                    @Override
-                    public String toString() {
-                        return super.toString();
-                    }
-                };
-            }
-
-            @Override
-            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-                final int finalpos = position;
-                final String secureName = (String) AppInfo.usersCorpora.toArray()[position];
-                final Corpus corpusObject = AppInfo.corpusMap.get(secureName);
-                ((RoundedLetterView)holder.itemView.findViewById(R.id.rlv_rlv)).setTitleText("C"+position);
-                ((TextView)holder.itemView.findViewById(R.id.rlv_text_view)).setText(corpusObject.getDisplayName());
-                holder.itemView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-                    @Override
-                    public void onCreateContextMenu(ContextMenu contextMenu, final View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-
-                        contextMenu.setHeaderTitle("Select an action");
-                        if(AppInfo.referencesCorpora.contains(secureName))
-                            contextMenu.add(0, finalpos, 0, "Unset reference");
-                        else
-                            contextMenu.add(0, finalpos, 0, "Set as reference");
-                        contextMenu.add(0, finalpos, 0, "Remove");
-                        ManageCorporaActivity.super.onCreateContextMenu(contextMenu, view, contextMenuInfo);
-                    }
-
-                });
-
-            }
-
-            @Override
-            public int getItemCount() {
-                return AppInfo.usersCorpora.size();
-            }
-        };
-    }
 
     public void addNewCorpus(View view) {
 
@@ -182,16 +172,16 @@ public class ManageCorporaActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        userAdapter = getUserAdapter();
-        this.recreate();
+        //userAdapter = getUserAdapter();
+        //this.recreate();
         userAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        userAdapter = getUserAdapter();
-        this.recreate();
+        //userAdapter = getUserAdapter();
+        //this.recreate();
         userAdapter.notifyDataSetChanged();
     }
 }
