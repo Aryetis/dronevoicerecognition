@@ -111,6 +111,7 @@ public class ManageCorporaActivity extends AppCompatActivity {
                 AppInfo.corpusMap.remove(secureName);
                 AppInfo.referencesCorpora.remove(secureName);
                 AppInfo.usersCorpora.remove(secureName);
+                AppInfo.clean(secureName);
                 Toast.makeText(context, "Reference " + corpus.getDisplayName() + " removed.", Toast.LENGTH_SHORT).show();
                 break;
             case "Set as reference":
@@ -124,6 +125,7 @@ public class ManageCorporaActivity extends AppCompatActivity {
                 break;
         }
         //this.recreate();
+        userAdapter.notifyDataSetChanged();
         return super.onContextItemSelected(item);
     }
 
